@@ -1,19 +1,4 @@
-/*
- * Copyright 2012-2015 org.opencloudb.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.opencloudb.net;
+package com.efuture.titan.net;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -21,184 +6,179 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.opencloudb.buffer.BufferPool;
-import org.opencloudb.statistic.CommandCount;
-import org.opencloudb.util.ExecutorUtil;
-import org.opencloudb.util.NameableExecutor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-/**
- * @author mycat
- */
+//import org.opencloudb.buffer.BufferPool;
+//import org.opencloudb.statistic.CommandCount;
+import com.efuture.titan.common.util.NameableExecutor;
+
 public final class NIOProcessor {
-	private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 64;
-	private static final int DEFAULT_BUFFER_CHUNK_SIZE = 4096;
-	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime()
-			.availableProcessors();
+  public static final Log LOG = LogFactory.getLog(NIOProcessor.class);
+  private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 64;
+  private static final int DEFAULT_BUFFER_CHUNK_SIZE = 4096;
 
-	private final String name;
-	private final NIOReactor reactor;
-	private final BufferPool bufferPool;
-	// private final NameableExecutor handler;
-	private final NameableExecutor executor;
-	private final ConcurrentMap<Long, FrontendConnection> frontends;
-	private final ConcurrentMap<Long, BackendConnection> backends;
-	private final CommandCount commands;
-	private long netInBytes;
-	private long netOutBytes;
+  private TitanConf conf;
 
-	public NIOProcessor(String name) throws IOException {
-		this(name, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_CHUNK_SIZE,
-				AVAILABLE_PROCESSORS, AVAILABLE_PROCESSORS);
-	}
+  private String name;
+  private NIOReactor reactor;
 
-	public NIOProcessor(String name, int handler, int executor)
-			throws IOException {
-		this(name, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_CHUNK_SIZE, handler,
-				executor);
-	}
+  // BufferPool that used to exchange data between frontend and backend connections
+  private BufferPool bufferPool;
+  //private NameableExecutor executor;
+  private ConcurrentMap<Long, FrontendConnection> frontends;
+  private ConcurrentMap<Long, BackendConnection> backends;
+  //private CommandCount commands;
+  //private long netInBytes;
+  //private long netOutBytes;
 
-	public NIOProcessor(String name, int buffer, int chunk, int handler,
-			int executor) throws IOException {
-		this.name = name;
-		this.reactor = new NIOReactor(name);
-		this.bufferPool = new BufferPool(buffer, chunk);
-//		this.handler = (handler > 0) ? ExecutorUtil
-//				.create(name + "-H", handler) : null;
-		this.executor = (executor > 0) ? ExecutorUtil.create(name + "-E",
-				executor) : null;
-		this.frontends = new ConcurrentHashMap<Long, FrontendConnection>();
-		this.backends = new ConcurrentHashMap<Long, BackendConnection>();
-		this.commands = new CommandCount();
-	}
+  public NIOProcessor(TitanConf conf, String name) throws IOException {
+    this(conf, name, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_CHUNK_SIZE,
+        conf.getIntVar(ConfVars.TITAN_SERVER_EXECUTORS));
+  }
 
-	public String getName() {
-		return name;
-	}
+  public NIOProcessor(TitanConf conf, String name, int nExecutor) throws IOException {
+    this(conf, name, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_CHUNK_SIZE, nExecutor);
+  }
 
-	public BufferPool getBufferPool() {
-		return bufferPool;
-	}
+  public NIOProcessor(TitanConf conf, String name, int bufferSize,
+      int chunkSize, int nExecutor) throws IOException {
+    this.conf = conf;
+    this.name = name;
+    this.reactor = new NIOReactor(name);
+    this.bufferPool = new BufferPool(bufferSize, chunkSize);
+    //if (nExecutor > 0) {
+    //  this.executor = NameableExecutor.newExecutor(name + "-E", nExecutor);
+    //}
+    this.frontends = new ConcurrentHashMap<Long, FrontendConnection>();
+    this.backends = new ConcurrentHashMap<Long, BackendConnection>();
+    //this.commands = new CommandCount();
+  }
 
-	public int getRegisterQueueSize() {
-		return reactor.getRegisterQueue().size();
-	}
+  public String getName() {
+    return this.name;
+  }
 
-	public int getWriteQueueSize() {
-		return reactor.getWriteQueue().size();
-	}
+  public NIOReactor getReactor() {
+    return this.reactor;
+  }
 
-//	public NameableExecutor getHandler() {
-//		return handler;
-//	}
+  public BufferPool getBufferPool() {
+    return bufferPool;
+  }
 
-	public NameableExecutor getExecutor() {
-		return executor;
-	}
+  //public int getRegisterQueueSize() {
+  //  return reactor.getRegisterQueue().size();
+  //}
 
-	public void startup() {
-		reactor.startup();
-	}
+  //public int getWriteQueueSize() {
+  //  return reactor.getWriteQueue().size();
+  //}
 
-	public void postRegister(NIOConnection c) {
-		reactor.postRegister(c);
-	}
+  //public NameableExecutor getExecutor() {
+  //  return executor;
+  //}
 
-	public void postWrite(NIOConnection c) {
-		reactor.postWrite(c);
-	}
+  public void startup() {
+    reactor.startup();
+  }
 
-	public CommandCount getCommands() {
-		return commands;
-	}
+  //public void postRegister(NIOConnection c) {
+  //  reactor.postRegister(c);
+  //}
 
-	public long getNetInBytes() {
-		return netInBytes;
-	}
+  //public void postWrite(NIOConnection c) {
+  //  reactor.postWrite(c);
+  //}
 
-	public void addNetInBytes(long bytes) {
-		netInBytes += bytes;
-	}
+  /*
+  public CommandCount getCommands() {
+    return commands;
+  }
+  */
 
-	public long getNetOutBytes() {
-		return netOutBytes;
-	}
+  //public long getNetInBytes() {
+  //  return netInBytes;
+  //}
 
-	public void addNetOutBytes(long bytes) {
-		netOutBytes += bytes;
-	}
+  //public void addNetInBytes(long bytes) {
+  //  netInBytes += bytes;
+  //}
 
-	public long getReactCount() {
-		return reactor.getReactCount();
-	}
+  //public long getNetOutBytes() {
+  //  return netOutBytes;
+  //}
 
-	public void addFrontend(FrontendConnection c) {
-		frontends.put(c.getId(), c);
-	}
+  //public void addNetOutBytes(long bytes) {
+  //  netOutBytes += bytes;
+  //}
 
-	public ConcurrentMap<Long, FrontendConnection> getFrontends() {
-		return frontends;
-	}
+  //public long getReactCount() {
+  //  return reactor.getReactCount();
+  //}
 
-	public void addBackend(BackendConnection c) {
-		backends.put(c.getId(), c);
-	}
+  public void addFrontend(FrontendConnection c) {
+    frontends.put(c.getId(), c);
+  }
 
-	public ConcurrentMap<Long, BackendConnection> getBackends() {
-		return backends;
-	}
+  public ConcurrentMap<Long, FrontendConnection> getFrontends() {
+    return frontends;
+  }
 
-	/**
-	 * 定时执行该方法，回收部分资源。
-	 */
-	public void check() {
-		frontendCheck();
-		backendCheck();
-	}
+  public void addBackend(BackendConnection c) {
+    backends.put(c.getId(), c);
+  }
 
-	// 前端连接检查
-	private void frontendCheck() {
-		Iterator<Entry<Long, FrontendConnection>> it = frontends.entrySet()
-				.iterator();
-		while (it.hasNext()) {
-			FrontendConnection c = it.next().getValue();
+  public ConcurrentMap<Long, BackendConnection> getBackends() {
+    return backends;
+  }
 
-			// 删除空连接
-			if (c == null) {
-				it.remove();
-				continue;
-			}
+  /**
+   * 定时执行该方法，回收部分资源。
+   */
+  public void check() {
+    checkFrontend();
+    checkBackend();
+  }
 
-			// 清理已关闭连接，否则空闲检查。
-			if (c.isClosed()) {
-				it.remove();
-				c.cleanup();
-			} else {
-				c.idleCheck();
-			}
-		}
-	}
+  private void checkFrontend() {
+    Iterator<Entry<Long, FrontendConnection>> it = frontends.entrySet()
+        .iterator();
+    while (it.hasNext()) {
+      FrontendConnection c = it.next().getValue();
 
-	// 后端连接检查
-	private void backendCheck() {
-		Iterator<Entry<Long, BackendConnection>> it = backends.entrySet()
-				.iterator();
-		while (it.hasNext()) {
-			BackendConnection c = it.next().getValue();
+      if (c == null) {
+        it.remove();
+        continue;
+      }
 
-			// 删除空连接
-			if (c == null) {
-				it.remove();
-				continue;
-			}
+      if (c.isClosed()) {
+        it.remove();
+        c.cleanup();
+      } else {
+        c.checkIdle();
+      }
+    }
+  }
 
-			// 清理已关闭连接，否则空闲检查。
-			if (c.isClosed()) {
-				it.remove();
-				c.cleanup();
-			} else {
-				c.idleCheck();
-			}
-		}
-	}
+  private void checkBackend() {
+    Iterator<Entry<Long, BackendConnection>> it = backends.entrySet()
+        .iterator();
+    while (it.hasNext()) {
+      BackendConnection c = it.next().getValue();
+
+      if (c == null) {
+        it.remove();
+        continue;
+      }
+
+      if (c.isClosed()) {
+        it.remove();
+        c.cleanup();
+      } else {
+        c.checkIdle();
+      }
+    }
+  }
 
 }

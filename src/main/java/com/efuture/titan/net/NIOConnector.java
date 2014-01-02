@@ -1,19 +1,5 @@
-/*
- * Copyright 2012-2015 org.opencloudb.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.opencloudb.net;
+
+package com.efuture.titan.net;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -22,131 +8,127 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.log4j.Logger;
-import org.opencloudb.config.ErrorCode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-/**
- * @author mycat
- */
-public final class NIOConnector extends Thread {
-    private static final Logger LOGGER = Logger.getLogger(NIOConnector.class);
-    private static final ConnectIdGenerator ID_GENERATOR = new ConnectIdGenerator();
+import com.efuture.titan.common.ErrorCode;
+import com.efuture.titan.common.util.StringUtils;
 
-    private final String name;
-    private final Selector selector;
-    private final BlockingQueue<BackendConnection> connectQueue;
-    private NIOProcessor[] processors;
-    private int nextProcessor;
-    private long connectCount;
+public class NIOConnector extends Thread {
+  public static Log LOG = LogFactory.getLog(NIOConnector.class);
+  private static ConnectIdGenerator ID_GENERATOR = new ConnectIdGenerator();
 
-    public NIOConnector(String name) throws IOException {
-        super.setName(name);
-        this.name = name;
-        this.selector = Selector.open();
-        this.connectQueue = new LinkedBlockingQueue<BackendConnection>();
-    }
+  private String name;
+  private Selector selector;
+  private BlockingQueue<BackendConnection> connectQueue;
+  private NIOProcessor[] processors;
+  private int nextProcessor;
+  private long connectCount;
 
-    public long getConnectCount() {
-        return connectCount;
-    }
+  public NIOConnector(String name) throws IOException {
+    super.setName(name);
+    this.name = name;
+    this.selector = Selector.open();
+    this.connectQueue = new LinkedBlockingQueue<BackendConnection>();
+  }
 
-    public void setProcessors(NIOProcessor[] processors) {
-        this.processors = processors;
-    }
+  public long getConnectCount() {
+    return connectCount;
+  }
 
-    public void postConnect(BackendConnection c) {
-        connectQueue.offer(c);
-        selector.wakeup();
-    }
+  public void setProcessors(NIOProcessor[] processors) {
+    this.processors = processors;
+  }
 
-    @Override
-    public void run() {
-        final Selector selector = this.selector;
-        for (;;) {
-            ++connectCount;
-            try {
-                selector.select(1000L);
-                connect(selector);
-                Set<SelectionKey> keys = selector.selectedKeys();
-                try {
-                    for (SelectionKey key : keys) {
-                        Object att = key.attachment();
-                        if (att != null && key.isValid() && key.isConnectable()) {
-                            finishConnect(key, att);
-                        } else {
-                            key.cancel();
-                        }
-                    }
-                } finally {
-                    keys.clear();
-                }
-            } catch (Throwable e) {
-                LOGGER.warn(name, e);
-            }
-        }
-    }
+  public void postConnect(BackendConnection c) {
+    connectQueue.offer(c);
+    selector.wakeup();
+  }
 
-    private void connect(Selector selector) {
-        BackendConnection c = null;
-        while ((c = connectQueue.poll()) != null) {
-            try {
-                c.connect(selector);
-            } catch (Throwable e) {
-                c.error(ErrorCode.ERR_CONNECT_SOCKET, e);
-            }
-        }
-    }
-
-    private void finishConnect(SelectionKey key, Object att) {
-        BackendConnection c = (BackendConnection) att;
+  @Override
+  public void run() {
+    Selector selector = this.selector;
+    while (true) {
+      ++connectCount;
+      try {
+        selector.select(1000L);
+        connect(selector);
+        Set<SelectionKey> keys = selector.selectedKeys();
         try {
-            if (c.finishConnect()) {
-                clearSelectionKey(key);
-                c.setId(ID_GENERATOR.getId());
-                NIOProcessor processor = nextProcessor();
-                c.setProcessor(processor);
-                processor.postRegister(c);
+          for (SelectionKey key : keys) {
+            Object att = key.attachment();
+            if (att != null && key.isValid() && key.isConnectable()) {
+              finishConnect(key, att);
+            } else {
+              key.cancel();
             }
-        } catch (Throwable e) {
-            clearSelectionKey(key);
-            c.error(ErrorCode.ERR_FINISH_CONNECT, e);
+          }
+        } finally {
+          keys.clear();
         }
+      } catch (Throwable e) {
+        LOG.warn("Error in NIOConnector(" + name + "). " +
+            StringUtils.stringifyException(e));
+      }
     }
+  }
 
-    private void clearSelectionKey(SelectionKey key) {
-        if (key.isValid()) {
-            key.attach(null);
-            key.cancel();
+  private void connect(Selector selector) {
+    BackendConnection c = null;
+    while ((c = connectQueue.poll()) != null) {
+      try {
+        c.connect(selector);
+      } catch (Throwable e) {
+        c.error(ErrorCode.ERR_CONNECT_SOCKET, e);
+      }
+    }
+  }
+
+  private void finishConnect(SelectionKey key, Object att) {
+    BackendConnection c = (BackendConnection) att;
+    try {
+      if (c.finishConnect()) {
+        clearSelectionKey(key);
+        c.setId(ID_GENERATOR.getId());
+        NIOProcessor processor = nextProcessor();
+        c.setProcessor(processor);
+        processor.postRegister(c);
+      }
+    } catch (Throwable e) {
+      clearSelectionKey(key);
+      c.error(ErrorCode.ERR_FINISH_CONNECT, e);
+    }
+  }
+
+  private void clearSelectionKey(SelectionKey key) {
+    if (key.isValid()) {
+      key.attach(null);
+      key.cancel();
+    }
+  }
+
+  private NIOProcessor nextProcessor() {
+    if (++nextProcessor == processors.length) {
+      nextProcessor = 0;
+    }
+    return processors[nextProcessor];
+  }
+
+  /**
+   * @brif backend ID Generator
+   */
+  private static class ConnectIdGenerator {
+    private long connectId = 0L;
+    private Object lock = new Object();
+
+    private long getId() {
+      synchronized (lock) {
+        if (connectId >= Long.MAX_VALUE) {
+          connectId = 0L;
         }
+        return ++connectId;
+      }
     }
-
-    private NIOProcessor nextProcessor() {
-        if (++nextProcessor == processors.length) {
-            nextProcessor = 0;
-        }
-        return processors[nextProcessor];
-    }
-
-    /**
-     * 后端连接ID生成器
-     * 
-     * @author mycat
-     */
-    private static class ConnectIdGenerator {
-
-        private static final long MAX_VALUE = Long.MAX_VALUE;
-
-        private long connectId = 0L;
-        private final Object lock = new Object();
-
-        private long getId() {
-            synchronized (lock) {
-                if (connectId >= MAX_VALUE) {
-                    connectId = 0L;
-                }
-                return ++connectId;
-            }
-        }
-    }
+  }
 
 }

@@ -22,6 +22,7 @@ public class TitanConf extends Configuration {
     TITAN_SERVER_PORT("titan.server.port", (int)8066),
     TITAN_SERVER_TIME_UPDATE_INTERVAL("titan.server.time.update.interval", 20L),
     TITAN_SERVER_PROCESSORS("titan.server.processors", nProcessors),
+    TITAN_SERVER_EXECUTORS("titan.server.executors", nProcessors * 2),
     TITAN_SERVER_PROCESSOR_CHECK_INTERVAL("titan.server.processor.check.interval",
         (long)15 * 1000L),
     TITAN_SERVER_IDLE_TIMEOUT("titan.server.idle.timeout", 30 * 60 * 1000L),

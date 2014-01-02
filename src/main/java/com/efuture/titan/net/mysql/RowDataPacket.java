@@ -46,61 +46,61 @@ import org.opencloudb.net.FrontendConnection;
  * @author mycat
  */
 public class RowDataPacket extends MySQLPacket {
-	private static final byte NULL_MARK = (byte) 251;
+  private static final byte NULL_MARK = (byte) 251;
 
-	public final int fieldCount;
-	public final List<byte[]> fieldValues;
+  public final int fieldCount;
+  public final List<byte[]> fieldValues;
 
-	public RowDataPacket(int fieldCount) {
-		this.fieldCount = fieldCount;
-		this.fieldValues = new ArrayList<byte[]>(fieldCount);
-	}
+  public RowDataPacket(int fieldCount) {
+    this.fieldCount = fieldCount;
+    this.fieldValues = new ArrayList<byte[]>(fieldCount);
+  }
 
-	public void add(byte[] value) {
-		fieldValues.add(value);
-	}
+  public void add(byte[] value) {
+    fieldValues.add(value);
+  }
 
-	public void read(byte[] data) {
-		MySQLMessage mm = new MySQLMessage(data);
-		packetLength = mm.readUB3();
-		packetId = mm.read();
-		for (int i = 0; i < fieldCount; i++) {
-			fieldValues.add(mm.readBytesWithLength());
-		}
-	}
+  public void read(byte[] data) {
+    MySQLMessage mm = new MySQLMessage(data);
+    packetLength = mm.readUB3();
+    packetId = mm.read();
+    for (int i = 0; i < fieldCount; i++) {
+      fieldValues.add(mm.readBytesWithLength());
+    }
+  }
 
-	@Override
-	public ByteBuffer write(ByteBuffer bb, FrontendConnection c) {
-		bb = c.checkWriteBuffer(bb, c.getPacketHeaderSize());
-		BufferUtil.writeUB3(bb, calcPacketSize());
-		bb.put(packetId);
-		for (int i = 0; i < fieldCount; i++) {
-			byte[] fv = fieldValues.get(i);
-			if (fv == null || fv.length == 0) {
-				bb = c.checkWriteBuffer(bb, 1);
-				bb.put(RowDataPacket.NULL_MARK);
-			} else {
-				bb = c.checkWriteBuffer(bb, BufferUtil.getLength(fv.length));
-				BufferUtil.writeLength(bb, fv.length);
-				bb = c.writeToBuffer(fv, bb);
-			}
-		}
-		return bb;
-	}
+  @Override
+  public ByteBuffer write(ByteBuffer bb, FrontendConnection c) {
+    bb = c.checkWriteBuffer(bb, c.getPacketHeaderSize());
+    BufferUtil.writeUB3(bb, calcPacketSize());
+    bb.put(packetId);
+    for (int i = 0; i < fieldCount; i++) {
+      byte[] fv = fieldValues.get(i);
+      if (fv == null || fv.length == 0) {
+        bb = c.checkWriteBuffer(bb, 1);
+        bb.put(RowDataPacket.NULL_MARK);
+      } else {
+        bb = c.checkWriteBuffer(bb, BufferUtil.getLength(fv.length));
+        BufferUtil.writeLength(bb, fv.length);
+        bb = c.writeToBuffer(fv, bb);
+      }
+    }
+    return bb;
+  }
 
-	@Override
-	public int calcPacketSize() {
-		int size = 0;
-		for (int i = 0; i < fieldCount; i++) {
-			byte[] v = fieldValues.get(i);
-			size += (v == null || v.length == 0) ? 1 : BufferUtil.getLength(v);
-		}
-		return size;
-	}
+  @Override
+  public int calcPacketSize() {
+    int size = 0;
+    for (int i = 0; i < fieldCount; i++) {
+      byte[] v = fieldValues.get(i);
+      size += (v == null || v.length == 0) ? 1 : BufferUtil.getLength(v);
+    }
+    return size;
+  }
 
-	@Override
-	protected String getPacketInfo() {
-		return "MySQL RowData Packet";
-	}
+  @Override
+  protected String getPacketInfo() {
+    return "MySQL RowData Packet";
+  }
 
 }

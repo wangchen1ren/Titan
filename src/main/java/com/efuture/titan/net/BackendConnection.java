@@ -42,14 +42,14 @@ public abstract class BackendConnection extends AbstractConnection {
     }
 
     public boolean isSuppressReadTemporay() {
-		return suppressReadTemporay;
-	}
+    return suppressReadTemporay;
+  }
 
-	public void setSuppressReadTemporay(boolean suppressReadTemporay) {
-		this.suppressReadTemporay = suppressReadTemporay;
-	}
+  public void setSuppressReadTemporay(boolean suppressReadTemporay) {
+    this.suppressReadTemporay = suppressReadTemporay;
+  }
 
-	public long getId() {
+  public long getId() {
         return id;
     }
 
@@ -126,11 +126,11 @@ public abstract class BackendConnection extends AbstractConnection {
         // nothing
     }
 
-	@Override
-	public String toString() {
-		return "BackendConnection [id=" + id + ", host=" + host + ", port="
-				+ port + ", localPort=" + localPort + ", suppressReadTemporay="
-				+ suppressReadTemporay + "]";
-	}
+  @Override
+  public String toString() {
+    return "BackendConnection [id=" + id + ", host=" + host + ", port="
+        + port + ", localPort=" + localPort + ", suppressReadTemporay="
+        + suppressReadTemporay + "]";
+  }
 
 }

@@ -1,19 +1,5 @@
-/*
- * Copyright 2012-2015 org.opencloudb.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.opencloudb.net;
+
+package com.efuture.titan.net;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -22,149 +8,146 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.log4j.Logger;
-import org.opencloudb.config.ErrorCode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-/**
- * 网络事件反应器
- * 
- * @author mycat
- */
-public final class NIOReactor {
-	private static final Logger LOGGER = Logger.getLogger(NIOReactor.class);
+import com.efuture.titan.common.ErrorCode;
+import com.efuture.titan.common.util.StringUtils;
 
-	private final String name;
-	private final R reactorR;
-	private final W reactorW;
+public class NIOReactor {
+  public static final Log LOG = LogFactory.getLog(NIOReactor.class);
 
-	public NIOReactor(String name) throws IOException {
-		this.name = name;
-		this.reactorR = new R();
-		this.reactorW = new W();
-	}
+  private String name;
 
-	final void startup() {
-		new Thread(reactorR, name + "-R").start();
-		new Thread(reactorW, name + "-W").start();
-	}
+  private ReadReactor readReactor;
+  private Thread readThread;
 
-	final void postRegister(NIOConnection c) {
-		reactorR.registerQueue.offer(c);
-		reactorR.selector.wakeup();
-	}
+  private WriteReacotr writeReactor;
+  private Thread writeThread;
 
-	final BlockingQueue<NIOConnection> getRegisterQueue() {
-		return reactorR.registerQueue;
-	}
+  public NIOReactor(String name) throws IOException {
+    this.name = name;
+    this.readReactor = new ReadReactor();
+    this.readThread = new Thread(readReactor, name + "-R");
+    this.WriteReactor = new WriteReactor();
+    this.writeThread = new Thread(WriteReactor, name + "-W");
+  }
 
-	final long getReactCount() {
-		return reactorR.reactCount;
-	}
+  public void startup() {
+    this.readThread.start();
+    this.writeThread.start();
+  }
 
-	final void postWrite(NIOConnection c) {
-		reactorW.writeQueue.offer(c);
-	}
+  public void postRegister(NIOConnection c) {
+    readReactor.registerQueue.offer(c);
+    readReactor.selector.wakeup();
+  }
 
-	final BlockingQueue<NIOConnection> getWriteQueue() {
-		return reactorW.writeQueue;
-	}
+  public BlockingQueue<NIOConnection> getRegisterQueue() {
+    return readReactor.registerQueue;
+  }
 
-	private final class R implements Runnable {
-		private final Selector selector;
-		private final BlockingQueue<NIOConnection> registerQueue;
-		private long reactCount;
+  public long getReactCount() {
+    return readReactor.reactCount;
+  }
 
-		private R() throws IOException {
-			this.selector = Selector.open();
-			this.registerQueue = new LinkedBlockingQueue<NIOConnection>();
-		}
+  public void postWrite(NIOConnection c) {
+    WriteReactor.writeQueue.offer(c);
+  }
 
-		@Override
-		public void run() {
-			final Selector selector = this.selector;
-			// final Set<SelectionKey> suppressedKeys = new
-			// HashSet<SelectionKey>();
-			for (;;) {
-				++reactCount;
-				try {
-					// Suppressed tempory read keys should not clear
-					// List<NIOConnection> suppressedReadCons=new
-					// LinkedList<NIOConnection>();
+  public BlockingQueue<NIOConnection> getWriteQueue() {
+    return WriteReactor.writeQueue;
+  }
 
-					selector.select(1000L);
-					register(selector);
-					Set<SelectionKey> keys = selector.selectedKeys();
-					// Set<SelectionKey> keys = selectedKeys;
+  private class ReadReactor implements Runnable {
+    private Selector selector;
+    private BlockingQueue<NIOConnection> registerQueue;
+    private long reactCount;
 
-					try {
-						for (SelectionKey key : keys) {
-							Object att = key.attachment();
-							// System.out.println("attchment "+att);
-							if (att != null && key.isValid()) {
-								int readyOps = key.readyOps();
-								if ((readyOps & SelectionKey.OP_READ) != 0) {
-									read((NIOConnection) att);
-								} else {
-									key.cancel();
-								}
-							} else {
-								key.cancel();
-							}
-						}
-					} finally {
-						keys.clear();
-					}
-				} catch (Throwable e) {
-					LOGGER.warn(name, e);
-				}
-			}
-		}
+    private ReadReactor() throws IOException {
+      this.selector = Selector.open();
+      this.registerQueue = new LinkedBlockingQueue<NIOConnection>();
+    }
 
-		private void register(Selector selector) {
-			NIOConnection c = null;
-			while ((c = registerQueue.poll()) != null) {
-				try {
-					c.register(selector);
-				} catch (Throwable e) {
-					c.error(ErrorCode.ERR_REGISTER, e);
-				}
-			}
-		}
+    @Override
+    public void run() {
+      Selector selector = this.selector;
+      while (true) {
+        ++reactCount;
+        try {
+          // Suppressed tempory read keys should not clear
 
-		private void read(NIOConnection c) {
+          selector.select(1000L);
+          register(selector);
+          Set<SelectionKey> keys = selector.selectedKeys();
+          // Set<SelectionKey> keys = selectedKeys;
 
-			try {
-				c.read();
-			} catch (Throwable e) {
-				c.error(ErrorCode.ERR_READ, e);
-				c.close("exception:" + e.toString());
-			}
-		}
+          try {
+            for (SelectionKey key : keys) {
+              Object att = key.attachment();
+              if (att != null &&
+                  key.isValid() &&
+                  (key.readyOps() & SelectionKey.OP_READ) != 0) {
+                read((NIOConnection) att);
+              } else {
+                key.cancel();
+              }
+            }
+          } finally {
+            keys.clear();
+          }
+        } catch (Exception e) {
+          LOG.warn("Error in NIOReactor(" + name + "). " +
+              StringUtils.stringifyException(e));
+        }
+      }
+    }
 
-	}
+    private void register(Selector selector) {
+      NIOConnection c = null;
+      while ((c = registerQueue.poll()) != null) {
+        try {
+          c.register(selector);
+        } catch (Throwable e) {
+          c.error(ErrorCode.ERR_REGISTER, e);
+        }
+      }
+    }
 
-	private final class W implements Runnable {
-		private final BlockingQueue<NIOConnection> writeQueue;
+    private void read(NIOConnection c) {
+      try {
+        c.read();
+      } catch (Throwable e) {
+        c.error(ErrorCode.ERR_READ, e);
+        c.close("exception:" + e.toString());
+      }
+    }
 
-		private W() {
-			this.writeQueue = new LinkedBlockingQueue<NIOConnection>();
-		}
+  }
 
-		@Override
-		public void run() {
-			NIOConnection c = null;
-			for (;;) {
-				try {
-					if ((c = writeQueue.take()) != null) {
-						c.writeByQueue();
-					}
-				} catch (Throwable e) {
-					LOGGER.warn(name, e);
-					c.close("exception:" + e.toString());
-				}
-			}
-		}
+  private class WriteReactor implements Runnable {
+    private BlockingQueue<NIOConnection> writeQueue;
 
-	}
+    private WriteReactor() {
+      this.writeQueue = new LinkedBlockingQueue<NIOConnection>();
+    }
+
+    @Override
+    public void run() {
+      NIOConnection c = null;
+      while (true) {
+        try {
+          if ((c = writeQueue.take()) != null) {
+            c.writeByQueue();
+          }
+        } catch (Exception e) {
+          LOG.warn("Error in NIOReactor(" + name + "). " +
+              StringUtils.stringifyException(e));
+          c.close("exception:" + e.toString());
+        }
+      }
+    }
+
+  }
 
 }
