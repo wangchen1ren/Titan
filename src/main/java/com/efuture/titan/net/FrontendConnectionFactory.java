@@ -17,8 +17,8 @@ public class FrontendConnectionFactory {
   protected static final long DEFAULT_IDLE_TIMEOUT = 8 * 3600 * 1000L;
   protected static final String DEFAULT_CHARSET = "UTF-8";
 
-  private TitanConf conf;
-  private List<NIOHandler> handlers = new ArrayList<NIOHandler>();
+  protected TitanConf conf;
+  protected List<NIOHandler> handlers = new ArrayList<NIOHandler>();
 
   public FrontendConnectionFactory(TitanConf conf) {
     this.conf = conf;

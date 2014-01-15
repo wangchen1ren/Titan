@@ -7,6 +7,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -25,17 +27,18 @@ public class NIOServerTest extends TestCase {
   private NIOProcessorManager mgr;
   private TestHandler testHandler;
 
+  private CountDownLatch countDownLatch;
+
   private class TestHandler implements NIOHandler {
 
-    private int calledTimes = 0;
     private byte[] data;
 
     @Override
     public void handle(byte[] data) {
-      calledTimes++;
       //System.err.println("Got handle data: " + new String(data));
       //System.err.println("Data length: " + data.length);
       this.data = data;
+      countDownLatch.countDown();
     }
 
     public byte[] getData() {
@@ -43,10 +46,6 @@ public class NIOServerTest extends TestCase {
         //System.err.println("Handler data: " + new String(data));
       }
       return data;
-    }
-
-    public int getCalledTimes() {
-      return calledTimes;
     }
   }
 
@@ -87,10 +86,11 @@ public class NIOServerTest extends TestCase {
   public void testOnePacket() {
     try {
       System.err.println("testOnePacket");
+      countDownLatch = new CountDownLatch(1);
       TestClient client = new TestClient("localhost", TEST_PORT);
       client.sendOnePacket();
-      //wait
-      Thread.sleep(1000L);
+      boolean flag = countDownLatch.await(1, TimeUnit.SECONDS);
+      assertTrue(flag);
       assertEquals(TEST_MESSAGE, getMessage(testHandler.getData()));
       client.close();
     } catch (Exception e) {
@@ -101,11 +101,11 @@ public class NIOServerTest extends TestCase {
   public void testMultiPacket() {
     try {
       System.err.println("testMultiPacket");
+      countDownLatch = new CountDownLatch(N_PACKET);
       TestClient client = new TestClient("localhost", TEST_PORT);
       client.sendMultiPacket();
-      //wait
-      Thread.sleep(5000L);
-      assertEquals(N_PACKET, testHandler.getCalledTimes());
+      boolean flag = countDownLatch.await(5, TimeUnit.SECONDS);
+      assertTrue(flag);
       assertEquals(TEST_MESSAGE, getMessage(testHandler.getData()));
       client.close();
     } catch (Exception e) {
