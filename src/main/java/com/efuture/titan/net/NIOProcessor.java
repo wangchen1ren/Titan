@@ -85,6 +85,11 @@ public final class NIOProcessor {
 
     public void stop() {
       stopped.set(true);
+      try {
+        this.selector.close();
+      } catch (Exception e) {
+        // ignore
+      }
     }
 
     @Override
@@ -111,7 +116,7 @@ public final class NIOProcessor {
             keys.clear();
           }
         } catch (Exception e) {
-          LOG.warn("Error in NIOReactor(" + name + "). " +
+          LOG.warn("Error in read thread: " +
               StringUtils.stringifyException(e));
         }
       }
@@ -141,7 +146,9 @@ public final class NIOProcessor {
         } catch (Exception e) {
           LOG.warn("Error in process write(" + name + "). " +
               StringUtils.stringifyException(e));
-          c.close();
+          if (c != null) {
+            c.close();
+          }
         }
       }
     }

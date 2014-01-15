@@ -34,6 +34,12 @@ public class NIOProcessorManager {
     }
   }
 
+  public void stop() {
+    for (NIOProcessor processor : processors) {
+      processor.stop();
+    }
+  }
+
   public NIOProcessor nextProcessor() {
     NIOProcessor res = processors.get(idx);
     idx = (idx + 1) % nProcessor;

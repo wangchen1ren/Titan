@@ -97,6 +97,7 @@ public class BaseConnection implements NIOConnection {
     int got = channel.read(readBuffer);
     lastReadTime = TimeUtil.currentTimeMillis();
     if (got < 0) {
+      close();
       throw new EOFException("socket closed.");
     } else if (got == 0) {
       return;
@@ -107,10 +108,10 @@ public class BaseConnection implements NIOConnection {
     }
   }
 
-  public void dumpBuffer(ByteBuffer buffer) {
+  public void dumpBuffer(ByteBuffer buffer, int offset) {
     byte[] bufferArray = buffer.array();
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < readBuffer.position(); ++i) {
+    for (int i = offset; i < readBuffer.position(); ++i) {
       /*
          if (bufferArray[i] >= 'a' && bufferArray[i] <= 'z' ||
          bufferArray[i] >= 'A' && bufferArray[i] <= 'Z' ||
@@ -134,7 +135,7 @@ public class BaseConnection implements NIOConnection {
     int packetLength = 0;
     int position = readBuffer.position();
     while (true) {
-      //dumpBuffer(readBuffer);
+      //dumpBuffer(readBuffer, readBufferOffset);
       packetLength = getPacketLength(readBuffer, readBufferOffset);
       //LOG.debug("Packet Length: " + packetLength);
 
@@ -153,10 +154,12 @@ public class BaseConnection implements NIOConnection {
       byte[] data = new byte[packetLength];
       readBuffer.get(data, 0, packetLength);
       //LOG.debug("Data: " + new String(data));
+      //LOG.debug("Handle data: " + data);
       handle(data);
-
       // 设置偏移量
       readBufferOffset += packetLength;
+      readBuffer.position(position);
+      
       if (position == readBufferOffset) {// 数据正好全部处理完毕
         readBuffer.clear();
         readBufferOffset = 0;

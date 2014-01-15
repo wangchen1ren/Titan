@@ -18,17 +18,21 @@ public class NIOServerTest extends TestCase {
 
   private static final int TEST_PORT = 20001;
   private static final String TEST_MESSAGE = "test";
+  private static final int N_PACKET = 2000;
 
   private TitanConf conf;
   private NIOServer server;
+  private NIOProcessorManager mgr;
   private TestHandler testHandler;
 
   private class TestHandler implements NIOHandler {
 
+    private int calledTimes = 0;
     private byte[] data;
 
     @Override
     public void handle(byte[] data) {
+      calledTimes++;
       //System.err.println("Got handle data: " + new String(data));
       //System.err.println("Data length: " + data.length);
       this.data = data;
@@ -39,6 +43,10 @@ public class NIOServerTest extends TestCase {
         //System.err.println("Handler data: " + new String(data));
       }
       return data;
+    }
+
+    public int getCalledTimes() {
+      return calledTimes;
     }
   }
 
@@ -52,7 +60,7 @@ public class NIOServerTest extends TestCase {
       FrontendConnectionFactory factory = new FrontendConnectionFactory(conf);
       factory.addNIOHandler(testHandler);
 
-      NIOProcessorManager mgr = new NIOProcessorManager(conf, "TManager");
+      mgr = new NIOProcessorManager(conf, "TManager");
       mgr.start();
 
       server = new NIOServer("TestServer", TEST_PORT, factory, mgr);
@@ -66,15 +74,42 @@ public class NIOServerTest extends TestCase {
     }
   }
 
-  public void test() {
+  public void tearDown() {
     try {
-    TestClient client = new TestClient("localhost", TEST_PORT);
-    client.send();
-    //wait
-    Thread.sleep(1000L);
-    assertEquals(TEST_MESSAGE, getMessage(testHandler.getData()));
+      server.shutdown();
+      mgr.stop();
     } catch (Exception e) {
-      fail("Failed in test: " + StringUtils.stringifyException(e));
+      e.printStackTrace();
+      fail("Failed in teardown: " + StringUtils.stringifyException(e));
+    }
+  }
+
+  public void testOnePacket() {
+    try {
+      System.err.println("testOnePacket");
+      TestClient client = new TestClient("localhost", TEST_PORT);
+      client.sendOnePacket();
+      //wait
+      Thread.sleep(1000L);
+      assertEquals(TEST_MESSAGE, getMessage(testHandler.getData()));
+      client.close();
+    } catch (Exception e) {
+      fail("Failed in testOnePacket: " + StringUtils.stringifyException(e));
+    }
+  }
+
+  public void testMultiPacket() {
+    try {
+      System.err.println("testMultiPacket");
+      TestClient client = new TestClient("localhost", TEST_PORT);
+      client.sendMultiPacket();
+      //wait
+      Thread.sleep(5000L);
+      assertEquals(N_PACKET, testHandler.getCalledTimes());
+      assertEquals(TEST_MESSAGE, getMessage(testHandler.getData()));
+      client.close();
+    } catch (Exception e) {
+      fail("Failed in testOnePacket: " + StringUtils.stringifyException(e));
     }
   }
 
@@ -109,15 +144,23 @@ public class NIOServerTest extends TestCase {
       channel.configureBlocking(false);
     }
 
-    public void send() throws IOException {
+    public void sendOnePacket() throws IOException {
       ByteBuffer buff = getTestPacketBuffer();
       buff.flip();
       int sent = channel.write(buff); 
       //System.err.println("Sent: " + sent);
     }
 
+    public void sendMultiPacket() throws IOException {
+      for (int i = 0; i < N_PACKET; ++i) {
+        sendOnePacket();
+      }
+    }
+
     public void close() throws IOException {
-      channel.close();
+      if (channel != null) {
+        channel.close();
+      }
     }
   }
 }
