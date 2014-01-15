@@ -2,9 +2,14 @@
 package com.efuture.titan.common.conf;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+
+import com.efuture.titan.common.Isolations;
 
 public class TitanConf extends Configuration {
 
@@ -17,15 +22,17 @@ public class TitanConf extends Configuration {
   public static enum ConfVars {
     TITAN_MANAGER_PORT("titan.manager.port", (int)9066),
 
-    TITAN_CHARSET("titan.charset", "UTF-8"),
-
     TITAN_SERVER_PORT("titan.server.port", (int)8066),
     TITAN_SERVER_TIME_UPDATE_INTERVAL("titan.server.time.update.interval", 20L),
+    TITAN_SERVER_TIMER_EXECUTOR("titan.server.timer.executor", 1),
     TITAN_SERVER_PROCESSORS("titan.server.processors", nProcessors),
-    TITAN_SERVER_EXECUTORS("titan.server.executors", nProcessors * 2),
+    TITAN_SERVER_EXECUTORS_PER_PROCESSOR("titan.server.executors.per.processor", 2),
     TITAN_SERVER_PROCESSOR_CHECK_INTERVAL("titan.server.processor.check.interval",
         (long)15 * 1000L),
+    TITAN_SERVER_CHARSET("titan.server.charset", "UTF-8"),
     TITAN_SERVER_IDLE_TIMEOUT("titan.server.idle.timeout", 30 * 60 * 1000L),
+    TITAN_SERVER_TX_ISOLATION("titan.server.tx.isolation", Isolations.REPEATED_READ),
+    TITAN_SERVER_USE_WR_FLUX_CONTROL("titan.server.use.wr.flux.control", 0),
 
     TITAN_DATANODE_IDLE_CHECK_INTERVAL("titan.datanode.idle.check.interval", 60 * 1000L),
     TITAN_DATANODE_HEARTBEAT_INTERVAL("titan.datanode.heartbeat.interval", 10 * 1000L),
@@ -135,6 +142,7 @@ public class TitanConf extends Configuration {
 
   public static long getLongVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Long.class);
+    return conf.getLong(var.varname, var.defaultLongVal);
   }
 
   public static void setLongVar(Configuration conf, ConfVars var, long val) {
@@ -216,6 +224,10 @@ public class TitanConf extends Configuration {
     } else {
       addResource(USER_CONF_FILE);
     }
+  }
+
+  public List<DataNodeConf> getDataNodeConfs() {
+    return null;
   }
 
 }

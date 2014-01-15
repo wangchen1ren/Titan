@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 org.opencloudb.
+ * Copyright 2012-2015 com.efuture.titan.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opencloudb.net.mysql;
+package com.efuture.titan.net.mysql;
 
 import java.nio.ByteBuffer;
 
-import org.opencloudb.mysql.BufferUtil;
-import org.opencloudb.mysql.MySQLMessage;
-import org.opencloudb.net.FrontendConnection;
+import com.efuture.titan.util.BufferUtil;
 
 /**
  * From server to client during initial handshake.
@@ -41,82 +39,76 @@ import org.opencloudb.net.FrontendConnection;
  * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Handshake_Initialization_Packet
  * </pre>
  * 
- * @author mycat
  */
 public class HandshakePacket extends MySQLPacket {
-    private static final byte[] FILLER_13 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  private static final byte[] FILLER_13 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    public byte protocolVersion;
-    public byte[] serverVersion;
-    public long threadId;
-    public byte[] seed;
-    public int serverCapabilities;
-    public byte serverCharsetIndex;
-    public int serverStatus;
-    public byte[] restOfScrambleBuff;
+  public byte protocolVersion;
+  public byte[] serverVersion;
+  public long threadId;
+  public byte[] seed;
+  public int serverCapabilities;
+  public byte serverCharsetIndex;
+  public int serverStatus;
+  public byte[] restOfScrambleBuff;
 
-    public void read(BinaryPacket bin) {
-        packetLength = bin.packetLength;
-        packetId = bin.packetId;
-        MySQLMessage mm = new MySQLMessage(bin.data);
-        protocolVersion = mm.read();
-        serverVersion = mm.readBytesWithNull();
-        threadId = mm.readUB4();
-        seed = mm.readBytesWithNull();
-        serverCapabilities = mm.readUB2();
-        serverCharsetIndex = mm.read();
-        serverStatus = mm.readUB2();
-        mm.move(13);
-        restOfScrambleBuff = mm.readBytesWithNull();
-    }
+  public HandshakePacket(byte packetId,
+      byte protocolVersion,
+      byte[] serverVersion,
+      long threadId,
+      byte[] seed,
+      int serverCapabilities,
+      byte serverCharsetIndex,
+      int serverStatus,
+      byte[] restOfScrambleBuff) {
+    this.packetId = packetId;
+    this.protocolVersion = protocolVersion;
+    this.serverVersion = serverVersion;
+    this.threadId = threadId;
+    this.seed = seed;
+    this.serverCapabilities = serverCapabilities;
+    this.serverCharsetIndex = serverCharsetIndex;
+    this.serverStatus = serverStatus;
+    this.restOfScrambleBuff = restOfScrambleBuff;
+  }
 
-    public void read(byte[] data) {
-        MySQLMessage mm = new MySQLMessage(data);
-        packetLength = mm.readUB3();
-        packetId = mm.read();
-        protocolVersion = mm.read();
-        serverVersion = mm.readBytesWithNull();
-        threadId = mm.readUB4();
-        seed = mm.readBytesWithNull();
-        serverCapabilities = mm.readUB2();
-        serverCharsetIndex = mm.read();
-        serverStatus = mm.readUB2();
-        mm.move(13);
-        restOfScrambleBuff = mm.readBytesWithNull();
-    }
+  @Override
+  public byte[] getBytes() {
+    int size = getPacketSize();
+    ByteBuffer buffer = ByteBuffer.allocate(size);
+    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    buffer.put(packetId);
+    buffer.put(protocolVersion);
+    BufferUtil.writeWithNull(buffer, serverVersion);
+    BufferUtil.writeUB4(buffer, threadId);
+    BufferUtil.writeWithNull(buffer, seed);
+    BufferUtil.writeUB2(buffer, serverCapabilities);
+    buffer.put(serverCharsetIndex);
+    BufferUtil.writeUB2(buffer, serverStatus);
+    buffer.put(FILLER_13);
+    BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
+    return buffer.array();
+  }
 
-    public void write(FrontendConnection c) {
-        ByteBuffer buffer = c.allocate();
-        BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(protocolVersion);
-        BufferUtil.writeWithNull(buffer, serverVersion);
-        BufferUtil.writeUB4(buffer, threadId);
-        BufferUtil.writeWithNull(buffer, seed);
-        BufferUtil.writeUB2(buffer, serverCapabilities);
-        buffer.put(serverCharsetIndex);
-        BufferUtil.writeUB2(buffer, serverStatus);
-        buffer.put(FILLER_13);
-        //        buffer.position(buffer.position() + 13);
-        BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
-        c.write(buffer);
-    }
+  @Override
+  public int getPacketSize() {
+    int size = PACKET_HEADER_SIZE;
+    size += 1; // packetId
+    size += 1; // protocolVersion
+    size += serverVersion.length; // serverVersion
+    size += 4; // threadId
+    size += seed.length + 1; // seed
+    size += 2; //serverCapabilities
+    size += 1; // serverCharsetIndex
+    size += 2; // serverStatus
+    size += 13; // FILLER_13
+    size += restOfScrambleBuff.length + 1;// restOfScrambleBuff
+    return size;
+  }
 
-    @Override
-    public int calcPacketSize() {
-        int size = 1;
-        size += serverVersion.length;// n
-        size += 5;// 1+4
-        size += seed.length;// 8
-        size += 19;// 1+2+1+2+13
-        size += restOfScrambleBuff.length;// 12
-        size += 1;// 1
-        return size;
-    }
-
-    @Override
-    protected String getPacketInfo() {
-        return "MySQL Handshake Packet";
-    }
+  @Override
+  protected String getPacketInfo() {
+    return "MySQL Handshake Packet";
+  }
 
 }

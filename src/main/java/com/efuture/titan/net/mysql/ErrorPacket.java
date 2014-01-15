@@ -1,25 +1,8 @@
-/*
- * Copyright 2012-2015 org.opencloudb.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.opencloudb.net.mysql;
+package com.efuture.titan.net.mysql;
 
 import java.nio.ByteBuffer;
 
-import org.opencloudb.mysql.BufferUtil;
-import org.opencloudb.mysql.MySQLMessage;
-import org.opencloudb.net.FrontendConnection;
+import com.efuture.titan.util.BufferUtil;
 
 /**
  * From server to client in response to command, if error.
@@ -36,87 +19,53 @@ import org.opencloudb.net.FrontendConnection;
  * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Error_Packet
  * </pre>
  * 
- * @author mycat
  */
 public class ErrorPacket extends MySQLPacket {
-    public static final byte FIELD_COUNT = (byte) 0xff;
-    private static final byte SQLSTATE_MARKER = (byte) '#';
-    private static final byte[] DEFAULT_SQLSTATE = "HY000".getBytes();
+  public static final byte FIELD_COUNT = (byte) 0xff;
+  private static final byte SQLSTATE_MARKER = (byte) '#';
+  private static final byte[] DEFAULT_SQLSTATE = "HY000".getBytes();
 
-    public byte fieldCount = FIELD_COUNT;
-    public int errno;
-    public byte mark = SQLSTATE_MARKER;
-    public byte[] sqlState = DEFAULT_SQLSTATE;
-    public byte[] message;
+  public byte fieldCount = FIELD_COUNT;
+  public int errno;
+  public byte mark = SQLSTATE_MARKER;
+  public byte[] sqlState = DEFAULT_SQLSTATE;
+  public byte[] message;
 
-    public void read(BinaryPacket bin) {
-        packetLength = bin.packetLength;
-        packetId = bin.packetId;
-        MySQLMessage mm = new MySQLMessage(bin.data);
-        fieldCount = mm.read();
-        errno = mm.readUB2();
-        if (mm.hasRemaining() && (mm.read(mm.position()) == SQLSTATE_MARKER)) {
-            mm.read();
-            sqlState = mm.readBytes(5);
-        }
-        message = mm.readBytes();
-    }
+  public ErrorPacket(byte packetId, int errno, byte[] message) {
+    this.packetId = packetId;
+    this.errno = errno;
+    this.message = message;
+  }
 
-    public void read(byte[] data) {
-        MySQLMessage mm = new MySQLMessage(data);
-        packetLength = mm.readUB3();
-        packetId = mm.read();
-        fieldCount = mm.read();
-        errno = mm.readUB2();
-        if (mm.hasRemaining() && (mm.read(mm.position()) == SQLSTATE_MARKER)) {
-            mm.read();
-            sqlState = mm.readBytes(5);
-        }
-        message = mm.readBytes();
-    }
+  @Override
+  public byte[] getBytes() {
+    int size = getPacketSize();
+    ByteBuffer buffer = ByteBuffer.allocate(size);
+    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE);
+    buffer.put(packetId);
+    buffer.put(fieldCount);
+    BufferUtil.writeUB2(buffer, errno);
+    buffer.put(mark);
+    buffer.put(sqlState);
+    buffer.put(message);
+    return buffer.array();
+  }
 
-    @Override
-    public ByteBuffer write(ByteBuffer buffer, FrontendConnection c) {
-        int size = calcPacketSize();
-        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize() + size);
-        BufferUtil.writeUB3(buffer, size);
-        buffer.put(packetId);
-        buffer.put(fieldCount);
-        BufferUtil.writeUB2(buffer, errno);
-        buffer.put(mark);
-        buffer.put(sqlState);
-        if (message != null) {
-            buffer = c.writeToBuffer(message, buffer);
-        }
-        return buffer;
-    }
+  @Override
+  public int getPacketSize() {
+    int size = PACKET_HEADER_SIZE;
+    size += 1; // packetId
+    size += 1; // fieldCount
+    size += 2; // errno
+    size += 1; // mark
+    size += 5; // sqlState
+    size += message.length;
+    return size;
+  }
 
-    public void write(FrontendConnection c) {
-        ByteBuffer buffer = c.allocate();
-        BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(fieldCount);
-        BufferUtil.writeUB2(buffer, errno);
-        buffer.put(mark);
-        buffer.put(sqlState);
-        if (message != null) {
-            buffer = c.writeToBuffer(message, buffer);
-        }
-        c.write(buffer);
-    }
-
-    @Override
-    public int calcPacketSize() {
-        int size = 9;// 1 + 2 + 1 + 5
-        if (message != null) {
-            size += message.length;
-        }
-        return size;
-    }
-
-    @Override
-    protected String getPacketInfo() {
-        return "MySQL Error Packet";
-    }
+  @Override
+  protected String getPacketInfo() {
+    return "MySQL Error Packet";
+  }
 
 }

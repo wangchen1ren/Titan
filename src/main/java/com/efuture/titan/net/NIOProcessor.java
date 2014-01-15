@@ -1,184 +1,151 @@
 package com.efuture.titan.net;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-//import org.opencloudb.buffer.BufferPool;
-//import org.opencloudb.statistic.CommandCount;
-import com.efuture.titan.common.util.NameableExecutor;
+//import com.efuture.titan.statistic.CommandCount;
+import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.common.conf.TitanConf.ConfVars;
+import com.efuture.titan.util.NameableExecutor;
+import com.efuture.titan.util.StringUtils;
 
 public final class NIOProcessor {
   public static final Log LOG = LogFactory.getLog(NIOProcessor.class);
-  private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 64;
-  private static final int DEFAULT_BUFFER_CHUNK_SIZE = 4096;
 
   private TitanConf conf;
-
   private String name;
-  private NIOReactor reactor;
 
-  // BufferPool that used to exchange data between frontend and backend connections
-  private BufferPool bufferPool;
-  //private NameableExecutor executor;
-  private ConcurrentMap<Long, FrontendConnection> frontends;
-  private ConcurrentMap<Long, BackendConnection> backends;
-  //private CommandCount commands;
-  //private long netInBytes;
-  //private long netOutBytes;
+  private NameableExecutor executor;
+  private List<NIOConnection> connectionList;
+
+  private R r;
+  private Thread rThread;
+
+  private W w;
+  private Thread wThread;
 
   public NIOProcessor(TitanConf conf, String name) throws IOException {
-    this(conf, name, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_CHUNK_SIZE,
-        conf.getIntVar(ConfVars.TITAN_SERVER_EXECUTORS));
-  }
-
-  public NIOProcessor(TitanConf conf, String name, int nExecutor) throws IOException {
-    this(conf, name, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_CHUNK_SIZE, nExecutor);
-  }
-
-  public NIOProcessor(TitanConf conf, String name, int bufferSize,
-      int chunkSize, int nExecutor) throws IOException {
     this.conf = conf;
     this.name = name;
-    this.reactor = new NIOReactor(name);
-    this.bufferPool = new BufferPool(bufferSize, chunkSize);
-    //if (nExecutor > 0) {
-    //  this.executor = NameableExecutor.newExecutor(name + "-E", nExecutor);
-    //}
-    this.frontends = new ConcurrentHashMap<Long, FrontendConnection>();
-    this.backends = new ConcurrentHashMap<Long, BackendConnection>();
-    //this.commands = new CommandCount();
+
+    int nExecutor = conf.getIntVar(ConfVars.TITAN_SERVER_EXECUTORS_PER_PROCESSOR);
+    this.executor = NameableExecutor.newExecutor(name + "-E", nExecutor);
+
+    connectionList = new ArrayList<NIOConnection>();
+
+    this.r = new R();
+    this.rThread = new Thread(r, name + "-R");
+    this.w = new W();
+    this.wThread = new Thread(w, name + "-W");
   }
 
-  public String getName() {
-    return this.name;
+  public void start() {
+    this.rThread.start();
+    this.wThread.start();
   }
 
-  public NIOReactor getReactor() {
-    return this.reactor;
+  public void stop() {
+    r.stop();
+    this.rThread.interrupt();
+    w.stop();
+    this.wThread.interrupt();
   }
 
-  public BufferPool getBufferPool() {
-    return bufferPool;
+  public NameableExecutor getExecutor() {
+    return executor;
   }
 
-  //public int getRegisterQueueSize() {
-  //  return reactor.getRegisterQueue().size();
-  //}
-
-  //public int getWriteQueueSize() {
-  //  return reactor.getWriteQueue().size();
-  //}
-
-  //public NameableExecutor getExecutor() {
-  //  return executor;
-  //}
-
-  public void startup() {
-    reactor.startup();
+  public void register(NIOConnection conn) throws IOException {
+    conn.register(this, this.r.selector);
+    connectionList.add(conn);
+    this.r.selector.wakeup();
   }
 
-  //public void postRegister(NIOConnection c) {
-  //  reactor.postRegister(c);
-  //}
-
-  //public void postWrite(NIOConnection c) {
-  //  reactor.postWrite(c);
-  //}
-
-  /*
-  public CommandCount getCommands() {
-    return commands;
-  }
-  */
-
-  //public long getNetInBytes() {
-  //  return netInBytes;
-  //}
-
-  //public void addNetInBytes(long bytes) {
-  //  netInBytes += bytes;
-  //}
-
-  //public long getNetOutBytes() {
-  //  return netOutBytes;
-  //}
-
-  //public void addNetOutBytes(long bytes) {
-  //  netOutBytes += bytes;
-  //}
-
-  //public long getReactCount() {
-  //  return reactor.getReactCount();
-  //}
-
-  public void addFrontend(FrontendConnection c) {
-    frontends.put(c.getId(), c);
+  public void processWrite(NIOConnection conn) {
+    w.writeQueue.offer(conn);
   }
 
-  public ConcurrentMap<Long, FrontendConnection> getFrontends() {
-    return frontends;
-  }
+  private class R implements Runnable {
+    private AtomicBoolean stopped = new AtomicBoolean(false);
+    private Selector selector;
 
-  public void addBackend(BackendConnection c) {
-    backends.put(c.getId(), c);
-  }
+    private R() throws IOException {
+      this.selector = Selector.open();
+    }
 
-  public ConcurrentMap<Long, BackendConnection> getBackends() {
-    return backends;
-  }
+    public void stop() {
+      stopped.set(true);
+    }
 
-  /**
-   * 定时执行该方法，回收部分资源。
-   */
-  public void check() {
-    checkFrontend();
-    checkBackend();
-  }
+    @Override
+    public void run() {
+      LOG.debug("Read thread started");
+      while (! stopped.get()) {
+        try {
+          //selector.select(1000L);
+          selector.select(1000L);
+          Set<SelectionKey> keys = selector.selectedKeys();
+          //LOG.debug("keys: " + keys);
 
-  private void checkFrontend() {
-    Iterator<Entry<Long, FrontendConnection>> it = frontends.entrySet()
-        .iterator();
-    while (it.hasNext()) {
-      FrontendConnection c = it.next().getValue();
-
-      if (c == null) {
-        it.remove();
-        continue;
-      }
-
-      if (c.isClosed()) {
-        it.remove();
-        c.cleanup();
-      } else {
-        c.checkIdle();
+          try {
+            for (SelectionKey key : keys) {
+              Object att = key.attachment();
+              if (att != null && key.isValid() &&
+                  (key.readyOps() & SelectionKey.OP_READ) != 0) {
+                ((NIOConnection) att).read();
+              } else {
+                key.cancel();
+              }
+            }
+          } finally {
+            keys.clear();
+          }
+        } catch (Exception e) {
+          LOG.warn("Error in NIOReactor(" + name + "). " +
+              StringUtils.stringifyException(e));
+        }
       }
     }
   }
 
-  private void checkBackend() {
-    Iterator<Entry<Long, BackendConnection>> it = backends.entrySet()
-        .iterator();
-    while (it.hasNext()) {
-      BackendConnection c = it.next().getValue();
+  private class W implements Runnable {
+    private AtomicBoolean stopped = new AtomicBoolean(false);
+    private BlockingQueue<NIOConnection> writeQueue;
 
-      if (c == null) {
-        it.remove();
-        continue;
-      }
+    private W() {
+      this.writeQueue = new LinkedBlockingQueue<NIOConnection>();
+    }
 
-      if (c.isClosed()) {
-        it.remove();
-        c.cleanup();
-      } else {
-        c.checkIdle();
+    public void stop() {
+      stopped.set(true);
+    }
+
+    @Override
+    public void run() {
+      NIOConnection c = null;
+      while (! stopped.get()) {
+        try {
+          if ((c = writeQueue.take()) != null) {
+            c.writeByQueue();
+          }
+        } catch (Exception e) {
+          LOG.warn("Error in process write(" + name + "). " +
+              StringUtils.stringifyException(e));
+          c.close();
+        }
       }
     }
+
   }
 
 }
