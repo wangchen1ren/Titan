@@ -17,16 +17,17 @@ import com.efuture.titan.common.conf.TitanConf.ConfVars;
 import com.efuture.titan.net.handler.NIOHandler;
 import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.net.NIOProcessorManager;
+import com.efuture.titan.net.NIOServer;
 import com.efuture.titan.util.StringUtils;
 
-public class MySQLServerTest extends TestCase {
+public class MySQLFrontendConnectionTest extends TestCase {
 
   private static final int TEST_PORT = 20001;
   private static final String TEST_MESSAGE = "test";
   private static final int N_PACKET = 2000;
 
   private TitanConf conf;
-  private MySQLServer server;
+  private NIOServer server;
   private NIOProcessorManager mgr;
   private TestHandler testHandler;
 
@@ -69,7 +70,7 @@ public class MySQLServerTest extends TestCase {
       mgr = new NIOProcessorManager(conf, "TManager");
       mgr.start();
 
-      server = new MySQLServer("TestServer", TEST_PORT, factory, mgr);
+      server = new NIOServer("TestServer", TEST_PORT, factory, mgr);
       server.start();
 
       // wait server start
