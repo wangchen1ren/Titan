@@ -4,13 +4,12 @@ package com.efuture.titan.net;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.net.buffer.BufferQueue;
+import com.efuture.titan.net.handler.NIOHandler;
 
-public class FrontendConnectionFactory {
+public abstract class FrontendConnectionFactory {
 
   protected static final int SOCKET_RECV_BUFFER_SIZE = 8 * 1024;
   protected static final int SOCKET_SEND_BUFFER_SIZE = 16 * 1024;
@@ -18,7 +17,7 @@ public class FrontendConnectionFactory {
   protected static final String DEFAULT_CHARSET = "UTF-8";
 
   protected TitanConf conf;
-  protected List<NIOHandler> handlers = new ArrayList<NIOHandler>();
+  protected NIOHandler handler;
 
   public FrontendConnectionFactory(TitanConf conf) {
     this.conf = conf;
@@ -38,13 +37,18 @@ public class FrontendConnectionFactory {
     return conn;
   }
 
+  abstract public FrontendConnection getConnection(SocketChannel channel);
+
+  /*
   public FrontendConnection getConnection(SocketChannel channel) {
-    FrontendConnection conn = new FrontendConnection(channel, handlers);
+    FrontendConnection conn = new FrontendConnection(conf, channel);
+    conn.setHandler(handler);
     return conn;
   }
+  */
 
-  public void addNIOHandler(NIOHandler handler) {
-    handlers.add(handler);
+  public void setNIOHandler(NIOHandler handler) {
+    this.handler = handler;
   }
 
 }

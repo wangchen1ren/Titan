@@ -1,4 +1,4 @@
-package com.efuture.titan.net.mysql;
+package com.efuture.titan.mysql.packet;
 
 import java.nio.ByteBuffer;
 

@@ -1,5 +1,5 @@
 
-package com.efuture.titan.net;
+package com.efuture.titan.mysql.net;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,27 +14,34 @@ import junit.framework.TestCase;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
+import com.efuture.titan.net.handler.NIOHandler;
+import com.efuture.titan.net.NIOConnection;
+import com.efuture.titan.net.NIOProcessorManager;
 import com.efuture.titan.util.StringUtils;
 
-public class NIOServerTest extends TestCase {
+public class MySQLServerTest extends TestCase {
 
   private static final int TEST_PORT = 20001;
   private static final String TEST_MESSAGE = "test";
   private static final int N_PACKET = 2000;
 
   private TitanConf conf;
-  private NIOServer server;
+  private MySQLServer server;
   private NIOProcessorManager mgr;
   private TestHandler testHandler;
 
   private CountDownLatch countDownLatch;
 
-  private class TestHandler implements NIOHandler {
+  private class TestHandler extends NIOHandler {
 
     private byte[] data;
 
+    public TestHandler(TitanConf conf) {
+      super(conf);
+    }
+
     @Override
-    public void handle(byte[] data) {
+    public void handle(NIOConnection conn, byte[] data) {
       //System.err.println("Got handle data: " + new String(data));
       //System.err.println("Data length: " + data.length);
       this.data = data;
@@ -55,14 +62,14 @@ public class NIOServerTest extends TestCase {
       conf.setIntVar(ConfVars.TITAN_SERVER_PROCESSORS, 1);
       conf.setIntVar(ConfVars.TITAN_SERVER_EXECUTORS_PER_PROCESSOR, 1);
 
-      testHandler = new TestHandler();
-      FrontendConnectionFactory factory = new FrontendConnectionFactory(conf);
-      factory.addNIOHandler(testHandler);
+      testHandler = new TestHandler(conf);
+      MySQLFrontendConnectionFactory factory = new MySQLFrontendConnectionFactory(conf);
+      factory.setNIOHandler(testHandler);
 
       mgr = new NIOProcessorManager(conf, "TManager");
       mgr.start();
 
-      server = new NIOServer("TestServer", TEST_PORT, factory, mgr);
+      server = new MySQLServer("TestServer", TEST_PORT, factory, mgr);
       server.start();
 
       // wait server start
