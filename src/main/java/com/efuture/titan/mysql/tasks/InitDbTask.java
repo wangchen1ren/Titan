@@ -1,7 +1,15 @@
 
 package com.efuture.titan.mysql.tasks;
 
+import com.efuture.titan.common.ErrorCode;
+import com.efuture.titan.mysql.MySQLMessage;
+import com.efuture.titan.mysql.net.MySQLFrontendConnection;
+import com.efuture.titan.mysql.packet.OkPacket;
+import com.efuture.titan.mysql.session.MySQLSessionState;
+
 public class InitDbTask extends MySQLTask {
+
+  private byte[] data;
 
   public InitDbTask(MySQLFrontendConnection conn, byte[] data) {
     super(conn);
@@ -9,23 +17,29 @@ public class InitDbTask extends MySQLTask {
   }
 
   public void run() {
-    SessionState ss = SessionState.get(conn);
+    MySQLSessionState ss = MySQLSessionState.get(conn);
 
-    MySQLMessage msg = new MySQLMessage(data);
+    MySQLMessage mm = new MySQLMessage(data);
     mm.position(5);
     String db = mm.readString();
 
     // 检查db是否已经设置
     if (ss.db != null) {
       if (db.equals(ss.db)) {
-        write(writeToBuffer(OkPacket.OK, allocate()));
+        conn.write(OkPacket.OK);
       } else {
-        writeErrMessage(ErrorCode.ER_DBACCESS_DENIED_ERROR,
+        conn.writeErrMessage(ErrorCode.ER_DBACCESS_DENIED_ERROR,
             "Not allowed to change the database!");
-      }   
+      }
       return;
     }   
 
+    // temporary
+    // TODO
+    ss.db = db;
+    conn.write(OkPacket.OK);
+
+    /*
     // 检查schema的有效性
     if (db == null || !privileges.schemaExists(db)) {
       writeErrMessage(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '"
@@ -46,5 +60,6 @@ public class InitDbTask extends MySQLTask {
           + db + "'";
       writeErrMessage(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
     }
+    */
   }
 }

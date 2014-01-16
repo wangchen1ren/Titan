@@ -53,6 +53,10 @@ public abstract class AbstractConnection implements NIOConnection {
     init();
   }
 
+  public TitanConf getConf() {
+    return conf;
+  }
+
   public void setHandler(NIOHandler handler) {
     this.handler = handler;
   }
@@ -63,6 +67,10 @@ public abstract class AbstractConnection implements NIOConnection {
     this.startupTime = TimeUtil.currentTimeMillis();
     this.lastReadTime = startupTime;
     this.lastWriteTime = startupTime;
+  }
+
+  public boolean isClosed() {
+    return isClosed.get();
   }
 
   /*==================================*/

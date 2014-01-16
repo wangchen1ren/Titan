@@ -11,9 +11,11 @@ import org.apache.commons.logging.LogFactory;
 
 import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.mysql.session.MySQLSessionState;
 import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.net.buffer.BufferPool;
 import com.efuture.titan.net.handler.NIOHandler;
+import com.efuture.titan.util.StringUtils;
 import com.efuture.titan.util.TimeUtil;
 
 public class MySQLFrontendConnection extends FrontendConnection {
@@ -22,6 +24,8 @@ public class MySQLFrontendConnection extends FrontendConnection {
   private static final int MYSQL_PACKET_HEADER_SIZE = 4;
   private static final int MAX_PACKET_SIZE = 16 << 20;
 
+  protected MySQLSessionState ss;
+
   protected ByteBuffer readBuffer;
   protected int readBufferOffset;
 
@@ -29,6 +33,8 @@ public class MySQLFrontendConnection extends FrontendConnection {
     super(conf, channel);
     this.readBuffer = BufferPool.getInstance().allocate();
     this.readBufferOffset = 0;
+    // init sessionstate
+    ss = MySQLSessionState.get(this);
   }
 
   @Override
@@ -160,9 +166,18 @@ public class MySQLFrontendConnection extends FrontendConnection {
   }
 
   @Override
-  protected void cleanup() {
-    // 回收接收缓存
+  public void close() {
     BufferPool.getInstance().recycle(readBuffer);
-    super.cleanup();
+    ss.remove(this);
+    super.close();
+  }
+
+  public void writeErrMessage(int errno, String msg) {
+    writeErrMessage((byte) 1, errno, msg);
+  }
+
+  public void writeErrMessage(byte id, int errno, String msg) {
+    //ErrorPacket err = new ErrorPacket(id, errno,
+    //    StringUtils.encodeString(msg, ss.charset));
   }
 }

@@ -885,4 +885,8 @@ public class StringUtils {
     }
     return str.toString();
   }
+
+  public byte[] encodeString(String str, String charset) {
+    return new byte[0];
+  }
 }

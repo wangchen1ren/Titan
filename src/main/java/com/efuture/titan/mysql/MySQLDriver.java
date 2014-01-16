@@ -4,30 +4,34 @@ package com.efuture.titan.mysql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
+import com.efuture.titan.mysql.packet.MySQLPacket;
+import com.efuture.titan.mysql.session.MySQLSessionState;
+import com.efuture.titan.mysql.tasks.InitDbTask;
+import com.efuture.titan.mysql.tasks.QueryTask;
 import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.net.handler.NIOHandler;
+import com.efuture.titan.security.Authenticator;
 import com.efuture.titan.session.SessionState;
 
 public class MySQLDriver extends NIOHandler {
   private static final Log LOG = LogFactory.getLog(MySQLDriver.class);
   private static final byte[] AUTH_OK = new byte[] { 7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0 };
 
-  private SessionState sessionState;
-
   private boolean isAuthenticated = false;
 
   public MySQLDriver(TitanConf conf) {
     super(conf);
-    //this.sessionState = new SessionState(conf);
+    //this.sessionState = new MySQLSessionState(conf);
   }
 
   public void handle(NIOConnection connection, byte[] data) {
-    MySQLFrontentConnection conn = (MySQLFrontendConnection) connection;
-    SessionState ss;
+    MySQLFrontendConnection conn = (MySQLFrontendConnection) connection;
+    MySQLSessionState ss;
     if (! conn.isClosed()) {
-      ss = SessionState.get(conn);
+      ss = MySQLSessionState.get(conn);
     } else {
       // connection has closed
     }
@@ -36,28 +40,31 @@ public class MySQLDriver extends NIOHandler {
   }
 
   private void checkAuthentication(MySQLFrontendConnection conn, byte[] data) {
-    SessionState ss = SessionState.get(conn);
+    MySQLSessionState ss = MySQLSessionState.get(conn);
     if (! ss.getIsAuthenticated()) {
       authenticate(ss, data);
       if (! ss.getIsAuthenticated()) {
         // error
         // conn.error();
-        closeConnection(conn);
+        conn.close();
+      } else {
+        // ok
+        conn.write(AUTH_OK);
       }
       return;
     }
   }
 
-  private void authenticate(SessionState ss, byte[] data) {
+  private void authenticate(MySQLSessionState ss, byte[] data) {
     Authenticator auth = ss.getAuthenticator();
     if (auth == null) {
       ss.setIsAuthenticated(true);
-      conn.write(AUTH_OK);
     }
+    // TODO
   }
 
   private void processCommand(MySQLFrontendConnection conn, byte[] data) {
-    SessionState ss = SessionState.get(conn);
+    MySQLSessionState ss = MySQLSessionState.get(conn);
     switch (data[4]) {
       case MySQLPacket.COM_INIT_DB:
         //source.initDB(data);
@@ -73,7 +80,8 @@ public class MySQLDriver extends NIOHandler {
         //source.ping();
         break;
       case MySQLPacket.COM_QUIT:
-        //source.close("do quit");
+        LOG.info("Quit command");
+        conn.close();
         break;
       case MySQLPacket.COM_PROCESS_KILL:
         //source.kill(data);
@@ -91,13 +99,10 @@ public class MySQLDriver extends NIOHandler {
         //source.heartbeat(data);
         break;
       default:
+        conn.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         //source.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         break;
     }
   }
 
-  private void closeConnection(MySQLFrontendConnection conn) {
-    SessionState.remove(conn);
-    conn.close();
-  }
 }

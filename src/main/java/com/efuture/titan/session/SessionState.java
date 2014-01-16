@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.security.Authenticator;
 
 public class SessionState {
@@ -12,17 +13,30 @@ public class SessionState {
   private static Map<NIOConnection, SessionState> sessionMap =
       new ConcurrentHashMap<NIOConnection, SessionState>();
 
-  private TitanConf conf;
+  protected TitanConf conf;
 
-  private boolean isAuthenticated = false;
+  protected boolean isAuthenticated = false;
+
+  public String db;
+  public String charset;
 
   public static SessionState get(NIOConnection conn) {
     SessionState ss = sessionMap.get(conn);
+    /*
     if (ss == null) {
       ss = new SessionState(conn.getConf());
-      sessionMap.put(conn, ss);
+      put(conn, ss);
     }
+    */
     return ss;
+  }
+
+  public static void put(NIOConnection conn, SessionState ss) {
+    sessionMap.put(conn, ss);
+  }
+
+  public static void remove(NIOConnection conn) {
+    sessionMap.remove(conn);
   }
 
   public SessionState(TitanConf conf) {
