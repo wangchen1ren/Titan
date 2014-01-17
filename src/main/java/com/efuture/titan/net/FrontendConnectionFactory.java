@@ -7,7 +7,6 @@ import java.nio.channels.SocketChannel;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.net.buffer.BufferQueue;
-import com.efuture.titan.net.handler.NIOHandler;
 
 public abstract class FrontendConnectionFactory {
 

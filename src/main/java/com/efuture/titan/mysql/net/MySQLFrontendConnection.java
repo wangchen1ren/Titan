@@ -12,9 +12,9 @@ import org.apache.commons.logging.LogFactory;
 import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.mysql.session.MySQLSessionState;
-import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.net.buffer.BufferPool;
-import com.efuture.titan.net.handler.NIOHandler;
+import com.efuture.titan.net.FrontendConnection;
+import com.efuture.titan.net.NIOHandler;
 import com.efuture.titan.util.StringUtils;
 import com.efuture.titan.util.TimeUtil;
 
@@ -177,6 +177,7 @@ public class MySQLFrontendConnection extends FrontendConnection {
   }
 
   public void writeErrMessage(byte id, int errno, String msg) {
+    //TODO
     //ErrorPacket err = new ErrorPacket(id, errno,
     //    StringUtils.encodeString(msg, ss.charset));
   }

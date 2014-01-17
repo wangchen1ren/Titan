@@ -5,7 +5,6 @@ import java.nio.channels.SocketChannel;
 
 import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
-import com.efuture.titan.net.handler.NIOHandler;
 
 public abstract class FrontendConnection extends AbstractConnection {
 

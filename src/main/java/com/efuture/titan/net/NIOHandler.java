@@ -1,4 +1,4 @@
-package com.efuture.titan.net.handler;
+package com.efuture.titan.net;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.net.NIOConnection;

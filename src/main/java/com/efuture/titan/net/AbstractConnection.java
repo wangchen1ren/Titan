@@ -18,7 +18,6 @@ import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.net.buffer.BufferPool;
 import com.efuture.titan.net.buffer.BufferQueue;
-import com.efuture.titan.net.handler.NIOHandler;
 import com.efuture.titan.util.StringUtils;
 import com.efuture.titan.util.TimeUtil;
 
