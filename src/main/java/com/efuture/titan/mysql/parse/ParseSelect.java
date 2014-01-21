@@ -19,14 +19,12 @@ public class ParseSelect {
     sql = ParseUtil.removeComment(sql);
     StringTokenizer st = new StringTokenizer(sql);
     String select = st.nextToken();
-    if (st.hasMoreTokens()) {
-      String token = st.nextToken();
-
-      // TODO
-      return OTHER;
-    } else {
-      return OTHER;
+    StringBuilder sb = new StringBuilder();
+    while (st.hasMoreTokens()) {
+      sb.append(st.nextToken());
+      sb.append(" ");
     }
+    return org.opencloudb.server.parser.ServerParseSelect.parse(sb.toString(), 0);
   }
 
 }

@@ -2,6 +2,7 @@ package com.efuture.titan.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
@@ -886,7 +887,14 @@ public class StringUtils {
     return str.toString();
   }
 
-  public byte[] encodeString(String str, String charset) {
-    return new byte[0];
+  public static byte[] encodeString(String str, String charset) {
+    if (str == null) {
+      return null;
+    }
+    try {
+      return str.getBytes(charset);
+    } catch (UnsupportedEncodingException e) {
+      return str.getBytes();
+    }
   }
 }

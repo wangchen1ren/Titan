@@ -20,6 +20,11 @@ public class SessionState {
   public String db;
   public String charset;
 
+  public String user;
+  public String host;
+
+  public long lastInsertId;
+
   public static SessionState get(NIOConnection conn) {
     SessionState ss = sessionMap.get(conn);
     /*
