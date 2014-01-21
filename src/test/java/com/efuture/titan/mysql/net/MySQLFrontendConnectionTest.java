@@ -14,8 +14,8 @@ import junit.framework.TestCase;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
-import com.efuture.titan.net.handler.NIOHandler;
 import com.efuture.titan.net.NIOConnection;
+import com.efuture.titan.net.NIOHandler;
 import com.efuture.titan.net.NIOProcessorManager;
 import com.efuture.titan.net.NIOServer;
 import com.efuture.titan.util.StringUtils;
@@ -61,7 +61,7 @@ public class MySQLFrontendConnectionTest extends TestCase {
     try {
       conf = new TitanConf();
       conf.setIntVar(ConfVars.TITAN_SERVER_PROCESSORS, 1);
-      conf.setIntVar(ConfVars.TITAN_SERVER_EXECUTORS_PER_PROCESSOR, 1);
+      conf.setIntVar(ConfVars.TITAN_SERVER_EXECUTORS_PER_PROCESSOR, 2);
 
       testHandler = new TestHandler(conf);
       MySQLFrontendConnectionFactory factory = new MySQLFrontendConnectionFactory(conf);
@@ -74,7 +74,7 @@ public class MySQLFrontendConnectionTest extends TestCase {
       server.start();
 
       // wait server start
-      Thread.sleep(1000L);
+      Thread.sleep(5000L);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Failed in setup: " + StringUtils.stringifyException(e));
@@ -97,7 +97,7 @@ public class MySQLFrontendConnectionTest extends TestCase {
       countDownLatch = new CountDownLatch(1);
       TestClient client = new TestClient("localhost", TEST_PORT);
       client.sendOnePacket();
-      boolean flag = countDownLatch.await(1, TimeUnit.SECONDS);
+      boolean flag = countDownLatch.await(2, TimeUnit.SECONDS);
       assertTrue(flag);
       assertEquals(TEST_MESSAGE, getMessage(testHandler.getData()));
       client.close();

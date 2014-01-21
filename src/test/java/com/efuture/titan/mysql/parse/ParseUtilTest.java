@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 
 public class ParseUtilTest extends TestCase {
   
-  public testRemoveComment() {
+  public void testRemoveComment() {
     String sql = "abcd#ddd\ne";
     assertEquals(new String("abcde"), ParseUtil.removeComment(sql));
     sql = "-- ffaddfa";

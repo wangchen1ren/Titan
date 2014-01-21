@@ -37,10 +37,10 @@ public class ParseUtil {
 
   private static String cutString(String str, int start, int end) {
     StringBuilder sb = new StringBuilder();
-    sb.append(str.substring(0, start - 1));
+    sb.append(str.substring(0, start));
     if (start < end) {
       sb.append(str.substring(end + 1));
     }
-    return sb.toString();
+    return sb.toString().trim();
   }
 }

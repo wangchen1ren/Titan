@@ -1,6 +1,7 @@
 package com.efuture.titan.net;
 
 import java.io.IOException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
@@ -115,6 +116,11 @@ public final class NIOProcessor {
           } finally {
             keys.clear();
           }
+        } catch (ClosedSelectorException e) {
+          if (!stopped.get()) {
+            LOG.warn("Read selector closed. " +
+                StringUtils.stringifyException(e));
+          }
         } catch (Exception e) {
           LOG.warn("Error in read thread: " +
               StringUtils.stringifyException(e));
@@ -142,6 +148,11 @@ public final class NIOProcessor {
         try {
           if ((c = writeQueue.take()) != null) {
             c.writeByQueue();
+          }
+        } catch (InterruptedException e) {
+          if (!stopped.get()) {
+            LOG.warn("Write thread(" + name + ") was interrupted. " +
+                StringUtils.stringifyException(e));
           }
         } catch (Exception e) {
           LOG.warn("Error in process write(" + name + "). " +
