@@ -9,22 +9,23 @@ import org.apache.commons.logging.LogFactory;
 import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
-import com.efuture.titan.mysql.exec.QueryProcessor;
 import com.efuture.titan.mysql.net.packet.OkPacket;
 import com.efuture.titan.mysql.net.packet.MySQLPacket;
+import com.efuture.titan.mysql.processor.CommandProcessor;
+import com.efuture.titan.mysql.processor.CommandProcessorFactory;
 import com.efuture.titan.mysql.session.MySQLSessionState;
 import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.net.NIOHandler;
 import com.efuture.titan.security.Authenticator;
 import com.efuture.titan.session.SessionState;
 
-public class MySQLCommandDriver extends NIOHandler {
-  private static final Log LOG = LogFactory.getLog(MySQLCommandDriver.class);
+public class MySQLNIOHandler extends NIOHandler {
+  private static final Log LOG = LogFactory.getLog(MySQLNIOHandler.class);
   private static final byte[] AUTH_OK = new byte[] { 7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0 };
 
   private boolean isAuthenticated = false;
 
-  public MySQLCommandDriver(TitanConf conf) {
+  public MySQLNIOHandler(TitanConf conf) {
     super(conf);
     //this.sessionState = new MySQLSessionState(conf);
   }
@@ -165,11 +166,6 @@ public class MySQLCommandDriver extends NIOHandler {
 
   private void query(MySQLFrontendConnection conn, byte[] data) {
     MySQLSessionState ss = MySQLSessionState.get(conn);
-    QueryProcessor processor = ss.getQueryProcessor();
-    if (processor == null) {
-      conn.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR,
-          "Query unsupported!");
-    }
     // 取得语句
     MySQLMessage mm = new MySQLMessage(data);
     mm.position(5);
@@ -191,8 +187,10 @@ public class MySQLCommandDriver extends NIOHandler {
     if (sql.endsWith(";")) {
       sql = sql.substring(0, sql.length() - 1); 
     }
+
     // 执行查询
-    processor.query(sql);
+    CommandProcessor processor = CommandProcessorFactory.get(sql, conn);
+    processor.run(sql, conn);
   }
 
   private void ping(MySQLFrontendConnection conn) {

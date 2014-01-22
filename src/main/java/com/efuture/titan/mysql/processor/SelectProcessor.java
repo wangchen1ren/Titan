@@ -1,11 +1,12 @@
 
-package com.efuture.titan.mysql.exec;
+package com.efuture.titan.mysql.processor;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import com.efuture.titan.common.ErrorCode;
+import com.efuture.titan.mysql.Driver;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.parse.MySQLParse;
 import com.efuture.titan.mysql.parse.ParseSelect;
@@ -25,7 +26,7 @@ import com.efuture.titan.util.ReflectionUtils;
 import com.efuture.titan.mysql.parse.ParseUtil;
 import org.opencloudb.server.parser.ServerParseSelect;
 
-public class SelectProcessor implements Processor {
+public class SelectProcessor implements CommandProcessor {
 
   private static final Map<Integer, Class> responseMap = new HashMap<Integer, Class>();
   static {
@@ -39,57 +40,69 @@ public class SelectProcessor implements Processor {
     responseMap.put(ParseSelect.LAST_INSERT_ID, SelectLastInsertIdResponse.class);
   }
 
+  public void init() {}
+
   @Override
-  public void process(String sql, MySQLFrontendConnection conn) {
+  public void run(String sql, MySQLFrontendConnection conn) {
     int selectOp = ParseSelect.parse(sql);
     if (selectOp == ParseSelect.OTHER) {
-      QueryExecutor.execute(sql, MySQLParse.SELECT, conn);
+      Driver driver = new Driver();
+      driver.run(sql, conn);
     } else {
       Class responseClass = responseMap.get(selectOp);
       Response response = (Response) ReflectionUtils.newInstance(responseClass);
       response.setFrontendConnection(conn);
       if (selectOp == ParseSelect.IDENTITY) {
-        SelectIdentityResponse res = (SelectIdentityResponse) response;
-        // just use cobar codes
-        // TODO
-
-        sql = rebuildSQL(sql);
-        int offset = 0;
-        for (; offset < sql.length(); ++offset) {
-          if (sql.charAt(offset) == '@') {
-            break;
-          }
-        }
-        int indexOfAtAt = offset;
-        offset = ServerParseSelect.indexAfterIdentity(sql, offset);
-        String orgName = sql.substring(indexOfAtAt, offset);
-        offset = ServerParseSelect.skipAs(sql, offset);
-        String alias = org.opencloudb.parser.util.ParseUtil.parseAlias(sql, offset);
-        if (alias == null) {
-          alias = orgName;
-        }
-        res.setFieldName(alias);
-        res.setFieldOrgName(orgName);
-        response = res;
+        response = selectIdentity(response, sql);
       } else if (selectOp == ParseSelect.LAST_INSERT_ID) {
-        SelectLastInsertIdResponse res = (SelectLastInsertIdResponse) response;
-        // use cobar codes
-        // TODO
-        sql = rebuildSQL(sql);
-        int offset = 0;
-        for (; offset < sql.length(); ++offset) {
-          if (sql.charAt(offset) == 'l') {
-            break;
-          }
-        }
-        offset = ServerParseSelect.indexAfterLastInsertIdFunc(sql, offset);
-        offset = ServerParseSelect.skipAs(sql, offset);
-        String alias = org.opencloudb.parser.util.ParseUtil.parseAlias(sql, offset);
-        res.setFieldName(alias);
-        response = res;
+        response = selectLastInsertId(response, sql);
       }
       response.response();
     }
+  }
+
+  // TODO
+  private Response selectIdentity(Response response, String sql) {
+    SelectIdentityResponse res = (SelectIdentityResponse) response;
+    // just use cobar codes
+
+    sql = rebuildSQL(sql);
+    int offset = 0;
+    for (; offset < sql.length(); ++offset) {
+      if (sql.charAt(offset) == '@') {
+        break;
+      }
+    }
+    int indexOfAtAt = offset;
+    offset = ServerParseSelect.indexAfterIdentity(sql, offset);
+    String orgName = sql.substring(indexOfAtAt, offset);
+    offset = ServerParseSelect.skipAs(sql, offset);
+    String alias = org.opencloudb.parser.util.ParseUtil.parseAlias(sql, offset);
+    if (alias == null) {
+      alias = orgName;
+    }
+    res.setFieldName(alias);
+    res.setFieldOrgName(orgName);
+    //response = res;
+    return res;
+  }
+
+  private Response selectLastInsertId(Response response, String sql) {
+    SelectLastInsertIdResponse res = (SelectLastInsertIdResponse) response;
+    // use cobar codes
+    sql = rebuildSQL(sql);
+    int offset = 0;
+    for (; offset < sql.length(); ++offset) {
+      if (sql.charAt(offset) == 'l') {
+        break;
+      }
+    }
+    offset = ServerParseSelect.indexAfterLastInsertIdFunc(sql, offset);
+    offset = ServerParseSelect.skipAs(sql, offset);
+    String alias = org.opencloudb.parser.util.ParseUtil.parseAlias(sql, offset);
+    res.setFieldName(alias);
+    //response = res;
+    return res;
   }
 
   private String rebuildSQL(String sql) {

@@ -60,6 +60,7 @@ public final class NIOProcessor {
     this.rThread.interrupt();
     w.stop();
     this.wThread.interrupt();
+    executor.shutdown();
   }
 
   public NameableExecutor getExecutor() {

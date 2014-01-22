@@ -1,23 +1,20 @@
 
-package com.efuture.titan.mysql.exec;
+package com.efuture.titan.mysql.processor;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.efuture.titan.common.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.mysql.Driver;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.OkPacket;
 import com.efuture.titan.mysql.parse.MySQLParse;
 import com.efuture.titan.mysql.session.MySQLSessionState;
 
-public class QueryProcessor {
-
-  private TitanConf conf;
-  private MySQLFrontendConnection conn;
-
-  private static final Map<Integer, Processor> processorMap = new HashMap<Integer, Processor>();
-
+public class CommandProcessorFactory {
+  private static final Map<Integer, CommandProcessor> processorMap =
+      new HashMap<Integer, CommandProcessor>();
   static {
     processorMap.put(MySQLParse.BEGIN, new UnsupportedProcessor());
     processorMap.put(MySQLParse.COMMIT, new CommitProcessor());
@@ -35,18 +32,18 @@ public class QueryProcessor {
     processorMap.put(MySQLParse.USE, new UseProcessor());
   }
 
-  public QueryProcessor(TitanConf conf, MySQLFrontendConnection conn) {
-    this.conf = conf;
-    this.conn = conn;
-  }
+  private CommandProcessorFactory() {}
 
-  public void query(String sql) {
+  public static CommandProcessor get(String sql, MySQLFrontendConnection conn) {
     int type = MySQLParse.parse(sql);
-    Processor processor = processorMap.get(type);
+    CommandProcessor processor = processorMap.get(type);
     if (processor != null) {
-      processor.process(sql, conn);
+      return processor;
     } else {      
-      QueryExecutor.execute(sql, type, conn);
+      // Driver
+      Driver driver = new Driver();
+      driver.init();
+      return driver;
     }
   }
 

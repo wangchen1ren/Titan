@@ -65,8 +65,10 @@ public class NIOServer extends Thread {
         listen();
       }
     } catch (Exception e) {
-      LOG.warn("Error in listening. " +
-          StringUtils.stringifyException(e));
+      if (! stopped.get()) {
+        LOG.error("NIOServer error. " +
+            StringUtils.stringifyException(e));
+      }
     }
   }
 
