@@ -92,8 +92,10 @@ public class NIOServer extends Thread {
           keys.clear();
         }
       } catch (Exception e) {
-        LOG.warn("Error in listening. " +
-            StringUtils.stringifyException(e));
+        if (! stopped.get()) {
+          LOG.warn("Error in listening. " +
+              StringUtils.stringifyException(e));
+        }
       }
     }
   }

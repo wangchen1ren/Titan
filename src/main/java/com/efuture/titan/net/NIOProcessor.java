@@ -117,14 +117,11 @@ public final class NIOProcessor {
           } finally {
             keys.clear();
           }
-        } catch (ClosedSelectorException e) {
+        } catch (Exception e) {
           if (!stopped.get()) {
-            LOG.warn("Read selector closed. " +
+            LOG.warn("Error in read thread: " +
                 StringUtils.stringifyException(e));
           }
-        } catch (Exception e) {
-          LOG.warn("Error in read thread: " +
-              StringUtils.stringifyException(e));
         }
       }
     }
@@ -156,8 +153,11 @@ public final class NIOProcessor {
                 StringUtils.stringifyException(e));
           }
         } catch (Exception e) {
-          LOG.warn("Error in process write(" + name + "). " +
-              StringUtils.stringifyException(e));
+          if (! stopped.get()) {
+            LOG.warn("Error in process write(" + name + "). " +
+                StringUtils.stringifyException(e));
+          }
+        } finally {
           if (c != null) {
             c.close();
           }
