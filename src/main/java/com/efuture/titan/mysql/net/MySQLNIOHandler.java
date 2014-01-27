@@ -32,14 +32,15 @@ public class MySQLNIOHandler extends NIOHandler {
 
   public void handle(NIOConnection connection, byte[] data) {
     MySQLFrontendConnection conn = (MySQLFrontendConnection) connection;
-    MySQLSessionState ss;
-    if (! conn.isClosed()) {
-      ss = MySQLSessionState.get(conn);
-    } else {
-      // connection has closed
+    if (conn.isClosed()) {
+      return;
     }
-    checkAuthentication(conn, data);
-    processCommand(conn, data);
+    MySQLSessionState ss = MySQLSessionState.get(conn);
+    if (! ss.isAuthenticated) {
+      authenticate(ss, data);
+    } else {
+      processCommand(ss, data);
+    }
   }
 
 
@@ -47,48 +48,31 @@ public class MySQLNIOHandler extends NIOHandler {
   /*     Connection Authentication    */
   /*==================================*/
 
-  private void checkAuthentication(MySQLFrontendConnection conn, byte[] data) {
-    MySQLSessionState ss = MySQLSessionState.get(conn);
-    if (! ss.getIsAuthenticated()) {
-      authenticate(ss, data);
-      if (! ss.getIsAuthenticated()) {
-        // error
-        // conn.error();
-        conn.close();
-      } else {
-        // ok
-        conn.write(AUTH_OK);
-      }
-      return;
-    }
-  }
-
   private void authenticate(MySQLSessionState ss, byte[] data) {
     Authenticator auth = ss.getAuthenticator();
     if (auth == null) {
-      ss.setIsAuthenticated(true);
+      ss.isAuthenticated = true;
     }
-    // TODO
+    ss.getFrontendConnection().write(AUTH_OK);
   }
-
 
   /*==================================*/
   /*         Process Commands         */
   /*==================================*/
 
-  private void processCommand(MySQLFrontendConnection conn, byte[] data) {
+  private void processCommand(MySQLSessionState ss, byte[] data) {
     switch (data[4]) {
       case MySQLPacket.COM_INIT_DB:
-        initDb(conn, data);
+        //initDb(conn, data);
         break;
       case MySQLPacket.COM_QUERY:
-        query(conn, data);
+        query(ss, data);
         break;
       case MySQLPacket.COM_PING:
-        ping(conn);
+        //ping(conn);
         break;
       case MySQLPacket.COM_QUIT:
-        quit(conn);
+        //quit(conn);
         break;
       case MySQLPacket.COM_PROCESS_KILL:
         //source.kill(data);
@@ -106,6 +90,7 @@ public class MySQLNIOHandler extends NIOHandler {
         //source.heartbeat(data);
         break;
       default:
+        MySQLFrontendConnection conn = (MySQLFrontendConnection) ss.getFrontendConnection();
         conn.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         //source.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         break;
@@ -164,8 +149,8 @@ public class MySQLNIOHandler extends NIOHandler {
   }
 
 
-  private void query(MySQLFrontendConnection conn, byte[] data) {
-    MySQLSessionState ss = MySQLSessionState.get(conn);
+  private void query(MySQLSessionState ss, byte[] data) {
+    MySQLFrontendConnection conn = (MySQLFrontendConnection) ss.getFrontendConnection();
     // 取得语句
     MySQLMessage mm = new MySQLMessage(data);
     mm.position(5);
@@ -189,8 +174,8 @@ public class MySQLNIOHandler extends NIOHandler {
     }
 
     // 执行查询
-    CommandProcessor processor = CommandProcessorFactory.get(sql, conn);
-    processor.run(sql, conn);
+    CommandProcessor processor = CommandProcessorFactory.get(ss, sql);
+    processor.run(sql);
   }
 
   private void ping(MySQLFrontendConnection conn) {

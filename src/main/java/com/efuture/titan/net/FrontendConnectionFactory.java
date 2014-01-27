@@ -30,6 +30,7 @@ public abstract class FrontendConnectionFactory {
     socket.setKeepAlive(true);
 
     FrontendConnection conn = getConnection(channel);
+    conn.startSession();
     //conn.setIdleTimeout(idleTimeout);
     //conn.setCharset(charset);
 

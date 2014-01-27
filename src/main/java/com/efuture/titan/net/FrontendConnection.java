@@ -12,6 +12,10 @@ public abstract class FrontendConnection extends AbstractConnection {
     super(conf, channel);
   }
 
+  abstract public void startSession();
+
+  abstract public void closeSession();
+
   @Override
   public void handle(final byte[] data) {
     final FrontendConnection obj = this;

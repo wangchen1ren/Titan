@@ -16,6 +16,7 @@ public class CommandProcessorFactory {
   private static final Map<Integer, CommandProcessor> processorMap =
       new HashMap<Integer, CommandProcessor>();
   static {
+    /*
     processorMap.put(MySQLParse.BEGIN, new UnsupportedProcessor());
     processorMap.put(MySQLParse.COMMIT, new CommitProcessor());
     processorMap.put(MySQLParse.EXPLAIN, new ExplainProcessor());
@@ -30,19 +31,19 @@ public class CommandProcessorFactory {
     processorMap.put(MySQLParse.SHOW, new ShowProcessor());
     processorMap.put(MySQLParse.START, new StartProcessor());
     processorMap.put(MySQLParse.USE, new UseProcessor());
+    */
   }
 
   private CommandProcessorFactory() {}
 
-  public static CommandProcessor get(String sql, MySQLFrontendConnection conn) {
+  public static CommandProcessor get(MySQLSessionState ss, String sql) {
     int type = MySQLParse.parse(sql);
     CommandProcessor processor = processorMap.get(type);
     if (processor != null) {
       return processor;
     } else {      
       // Driver
-      Driver driver = new Driver();
-      driver.init();
+      Driver driver = new Driver(ss);
       return driver;
     }
   }

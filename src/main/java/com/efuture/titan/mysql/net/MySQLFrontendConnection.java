@@ -33,8 +33,22 @@ public class MySQLFrontendConnection extends FrontendConnection {
     super(conf, channel);
     this.readBuffer = BufferPool.getInstance().allocate();
     this.readBufferOffset = 0;
+    startSession();
+  }
+
+  @Override
+  public void startSession() {
     // init sessionstate
     ss = MySQLSessionState.get(this);
+  }
+
+  public MySQLSessionState getSessionState() {
+    return ss;
+  }
+
+  @Override
+  public void closeSession() {
+    MySQLSessionState.remove(this);
   }
 
   @Override
@@ -168,7 +182,7 @@ public class MySQLFrontendConnection extends FrontendConnection {
   @Override
   public void close() {
     BufferPool.getInstance().recycle(readBuffer);
-    ss.remove(this);
+    closeSession();
     super.close();
   }
 

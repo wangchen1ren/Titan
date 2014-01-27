@@ -11,8 +11,6 @@ import com.efuture.titan.session.SessionState;
 
 public class MySQLSessionState extends SessionState {
 
-  private MySQLFrontendConnection conn;
-
   public static MySQLSessionState get(MySQLFrontendConnection conn) {
     MySQLSessionState ss = (MySQLSessionState) SessionState.get(conn);
     if (ss == null) {
@@ -23,8 +21,9 @@ public class MySQLSessionState extends SessionState {
   }
 
   public MySQLSessionState(TitanConf conf, MySQLFrontendConnection conn) {
-    super(conf);
-    this.conn = conn;
+    super(conf, conn);
+    // TODO
+    isAuthenticated = true;
   }
 
   @Override

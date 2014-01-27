@@ -40,14 +40,19 @@ public class SelectProcessor implements CommandProcessor {
     responseMap.put(ParseSelect.LAST_INSERT_ID, SelectLastInsertIdResponse.class);
   }
 
-  public void init() {}
+  private MySQLFrontendConnection conn;
+
+  public void init(MySQLSessionState ss) {
+    this.conn = (MySQLFrontendConnection) ss.getFrontendConnection();
+  }
 
   @Override
-  public void run(String sql, MySQLFrontendConnection conn) {
+  public void run(String sql) {
     int selectOp = ParseSelect.parse(sql);
     if (selectOp == ParseSelect.OTHER) {
       Driver driver = new Driver();
-      driver.run(sql, conn);
+      driver.init(MySQLSessionState.get(conn));
+      driver.run(sql);
     } else {
       Class responseClass = responseMap.get(selectOp);
       Response response = (Response) ReflectionUtils.newInstance(responseClass);
