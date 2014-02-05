@@ -9,7 +9,7 @@ import java.nio.channels.SocketChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.efuture.titan.common.ErrorCode;
+import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.mysql.session.MySQLSessionState;
 import com.efuture.titan.net.buffer.BufferPool;

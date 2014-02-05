@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.efuture.titan.common.ErrorCode;
+import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.mysql.Driver;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.parse.MySQLParse;
@@ -24,7 +24,7 @@ import com.efuture.titan.util.ReflectionUtils;
 
 // TO BE REMOVED
 import com.efuture.titan.mysql.parse.ParseUtil;
-import org.opencloudb.server.parser.ServerParseSelect;
+import com.alibaba.cobar.server.parser.ServerParseSelect;
 
 public class SelectProcessor implements CommandProcessor {
 
@@ -82,7 +82,7 @@ public class SelectProcessor implements CommandProcessor {
     offset = ServerParseSelect.indexAfterIdentity(sql, offset);
     String orgName = sql.substring(indexOfAtAt, offset);
     offset = ServerParseSelect.skipAs(sql, offset);
-    String alias = org.opencloudb.parser.util.ParseUtil.parseAlias(sql, offset);
+    String alias = com.alibaba.cobar.parser.util.ParseUtil.parseAlias(sql, offset);
     if (alias == null) {
       alias = orgName;
     }
@@ -104,7 +104,7 @@ public class SelectProcessor implements CommandProcessor {
     }
     offset = ServerParseSelect.indexAfterLastInsertIdFunc(sql, offset);
     offset = ServerParseSelect.skipAs(sql, offset);
-    String alias = org.opencloudb.parser.util.ParseUtil.parseAlias(sql, offset);
+    String alias = com.alibaba.cobar.parser.util.ParseUtil.parseAlias(sql, offset);
     res.setFieldName(alias);
     //response = res;
     return res;

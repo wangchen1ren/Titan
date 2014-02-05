@@ -3,7 +3,8 @@ package com.efuture.titan.mysql.response;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.common.Fields;
+import com.alibaba.cobar.config.Fields;
+import com.alibaba.cobar.util.LongUtil;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.EOFPacket;
 import com.efuture.titan.mysql.net.packet.FieldPacket;
@@ -12,7 +13,6 @@ import com.efuture.titan.mysql.net.packet.ResultSetHeaderPacket;
 import com.efuture.titan.mysql.net.packet.RowDataPacket;
 import com.efuture.titan.mysql.parse.ParseUtil;
 import com.efuture.titan.mysql.session.MySQLSessionState;
-import com.efuture.titan.util.LongUtil;
 import com.efuture.titan.util.StringUtils;
 
 public class SelectIdentityResponse extends Response {

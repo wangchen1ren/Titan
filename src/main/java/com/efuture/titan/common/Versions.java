@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 org.opencloudb.
+ * Copyright 2012-2015 com.efuture.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,6 @@ public interface Versions {
   byte PROTOCOL_VERSION = 10;
 
   /** 服务器版本 */
-  byte[] SERVER_VERSION = "5.1.48-mycat-0.9".getBytes();
+  byte[] SERVER_VERSION = "5.1.48-titan-1.0.0".getBytes();
 
 }

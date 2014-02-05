@@ -5,11 +5,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.cobar.config.Isolations;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
-import com.efuture.titan.common.Isolations;
+//import com.efuture.titan.common.Isolations;
 
 public class TitanConf extends Configuration {
 

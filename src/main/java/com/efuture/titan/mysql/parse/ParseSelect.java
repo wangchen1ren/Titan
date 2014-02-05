@@ -24,7 +24,7 @@ public class ParseSelect {
       sb.append(st.nextToken());
       sb.append(" ");
     }
-    return org.opencloudb.server.parser.ServerParseSelect.parse(sb.toString(), 0);
+    return com.alibaba.cobar.server.parser.ServerParseSelect.parse(sb.toString(), 0);
   }
 
 }

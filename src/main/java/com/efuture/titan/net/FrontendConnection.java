@@ -3,7 +3,7 @@ package com.efuture.titan.net;
 
 import java.nio.channels.SocketChannel;
 
-import com.efuture.titan.common.ErrorCode;
+import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 
 public abstract class FrontendConnection extends AbstractConnection {

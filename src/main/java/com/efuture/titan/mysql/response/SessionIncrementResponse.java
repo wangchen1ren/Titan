@@ -3,7 +3,8 @@ package com.efuture.titan.mysql.response;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.common.Fields;
+import com.alibaba.cobar.config.Fields;
+import com.alibaba.cobar.util.LongUtil;
 import com.efuture.titan.common.Versions;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.EOFPacket;
@@ -11,7 +12,6 @@ import com.efuture.titan.mysql.net.packet.FieldPacket;
 import com.efuture.titan.mysql.net.packet.PacketUtils;
 import com.efuture.titan.mysql.net.packet.ResultSetHeaderPacket;
 import com.efuture.titan.mysql.net.packet.RowDataPacket;
-import com.efuture.titan.util.LongUtil;
 
 public class SessionIncrementResponse extends Response {
   private static final int FIELD_COUNT = 1;

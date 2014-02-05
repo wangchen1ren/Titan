@@ -4,7 +4,7 @@ package com.efuture.titan.mysql.processor;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.efuture.titan.common.ErrorCode;
+import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.mysql.Driver;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;

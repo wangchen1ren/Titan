@@ -3,7 +3,7 @@ package com.efuture.titan.mysql.response;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.common.Fields;
+import com.alibaba.cobar.config.Fields;
 import com.efuture.titan.common.Versions;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.EOFPacket;
