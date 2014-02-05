@@ -8,6 +8,6 @@ import com.efuture.titan.common.conf.TitanConf;
 public class SemanticAnalyzerFactory {
 
   public static SemanticAnalyzer get(TitanConf conf, SQLStatement statement) {
-    return null;
+    return new SemanticAnalyzer(conf);
   }
 }

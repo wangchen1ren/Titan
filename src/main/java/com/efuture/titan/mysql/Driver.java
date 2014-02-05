@@ -72,6 +72,18 @@ public class Driver implements CommandProcessor {
 
       LOG.info("Parse Completed");
 
+      /*
+         StringBuilder out = new StringBuilder();
+         MySqlOutputVisitor visitor = new MySqlOutputVisitor(out);
+
+         for (SQLStatement stmt : stmtList) {
+         stmt.accept(visitor);
+         out.append(";");
+         }   
+         LOG.info("statement: " + out.toString());
+         */
+
+      // Semantic Analyse
       SemanticAnalyzer sem = SemanticAnalyzerFactory.get(ss.getConf(), statement);
       sem.analyze(statement);
 
@@ -86,18 +98,6 @@ public class Driver implements CommandProcessor {
       doAuthorization();
     }
 
-    /*
-    StringBuilder out = new StringBuilder();
-    MySqlOutputVisitor visitor = new MySqlOutputVisitor(out);
-
-    for (SQLStatement stmt : stmtList) {
-      stmt.accept(visitor);
-      out.append(";");
-    }   
-    LOG.info("statement: " + out.toString());
-    */
-
-    // Semantic Analyse
 
     Router router = new Router();
     plan = router.route(sql, ss);

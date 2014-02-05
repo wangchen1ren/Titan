@@ -14,6 +14,21 @@ struct Version {
 struct Database {
   1: string name,
   2: string description,
+  3: string uri,
+}
+
+struct FieldSchema {
+  1: string name,
+  2: string type,
+  3: string comment,
+}
+
+struct PartitionRule {
+}
+
+struct DataNode {
+  1: string name,
+#  2: DataSource source,
 }
 
 struct Table {
@@ -35,9 +50,29 @@ struct Table {
   11: FieldSchema joinKey,
 }
 
-struct DataNode {
-  1: string name,
-  2: DataSource source,
+exception MetaException {
+  1: string message
 }
 
-struct 
+exception AlreadyExistsException {
+  1: string message
+}
+
+exception InvalidObjectException {
+  1: string message
+}
+
+exception NoSuchObjectException {
+  1: string message
+}
+
+service MetaServer {
+  void create_database(1:Database database)
+      throws(1: AlreadyExistsException o1,
+             2: InvalidObjectException o2,
+             3: MetaException o3)
+  Database get_database(1:string name)
+      throws(1: NoSuchObjectException o1,
+             2: MetaException o2)
+
+}
