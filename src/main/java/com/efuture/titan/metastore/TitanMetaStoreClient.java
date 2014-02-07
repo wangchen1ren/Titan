@@ -30,7 +30,7 @@ public class TitanMetaStoreClient implements IMetaStoreClient {
     String msUri = conf.getVar(ConfVars.TITAN_METASTORE_URI);
     localMetaStore = (msUri == null) ? true : msUri.trim().isEmpty();
     if (localMetaStore) {
-      //client = TitanMetaStore.newTMSHandler("titan meta client", conf);
+      client = TitanMetaStore.newTMSHandler("titan meta client", conf);
       isConnected = true;
       return;
     }
@@ -60,7 +60,6 @@ public class TitanMetaStoreClient implements IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_table_rule(ruleName));
   }
-
 
   private Database deepCopy(Database db) {
     Database copy = null;

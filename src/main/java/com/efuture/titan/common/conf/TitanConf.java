@@ -24,12 +24,21 @@ public class TitanConf extends Configuration {
   public static enum ConfVars {
     TITAN_MANAGER_PORT("titan.manager.port", (int)9066),
 
+    // server
     TITAN_SERVER_PORT("titan.server.port", (int)8066),
     TITAN_SERVER_AUTHORIZATION_ENABLED("titan.server.authorization.enabled", false),
 
+    // metastore
+    TITAN_METASTORE_PORT("titan.metastore.port", 21112),
+    TITAN_METASTORE_TCP_KEEP_ALIVE("titan.metastore.tcp.keep.alive", false),
+    TITAN_METASTORE_MIN_WORKERS("titan.metastore.min.workers", 0),
+    TITAN_METASTORE_MAX_WORKERS("titan.metastore.max.workers", 0),
+
+    // metastore client
     TITAN_METASTORE_URI("titan.metastore.uri", ""),
     TITAN_METASTORE_RETRIES("titan.metastore.retries", 3),
     TITAN_METASTORE_RETRY_INTERVAL("titan.metastore.retry.interval", 1),
+
 
     TITAN_SERVER_TIME_UPDATE_INTERVAL("titan.server.time.update.interval", 20L),
     TITAN_SERVER_TIMER_EXECUTOR("titan.server.timer.executor", 1),

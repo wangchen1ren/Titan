@@ -8,6 +8,8 @@ import com.efuture.titan.common.TitanException;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.metastore.*;
 import com.efuture.titan.metastore.IMetaStoreClient;
+import com.efuture.titan.metastore.TitanMetaStoreClient;
+import com.efuture.titan.metastore.RetryingMetaStoreClient;
 import com.efuture.titan.metastore.MetaException;
 import com.efuture.titan.util.StringUtils;
 
@@ -49,8 +51,15 @@ public class Meta {
     return metaStoreClient;
   }
 
-  private IMetaStoreClient createMetaStoreClient() {
-    return null;
+  private IMetaStoreClient createMetaStoreClient() throws MetaException {
+    TitanMetaHookLoader hookLoader = new TitanMetaHookLoader() {
+      public TitanMetaHook getHook(Table tbl) throws MetaException {
+        return null;
+      }    
+    };   
+    return RetryingMetaStoreClient.getProxy(conf, hookLoader,
+        TitanMetaStoreClient.class.getName());
+
   }
 
   public Database getDatabase(String dbName) throws TitanException {
