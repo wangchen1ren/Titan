@@ -40,7 +40,6 @@ struct Table {
 
   # partition
   5: FieldSchema partitionKey,
-  6: string tableRule,
   7: list<DataNode> dataNodes,
 
   # for table join
@@ -49,7 +48,7 @@ struct Table {
   10: FieldSchema parentJoinKey,
   11: FieldSchema joinKey,
 
-  12: optional string rule,
+  12: optional string tableRule,
 }
 
 struct Database {
