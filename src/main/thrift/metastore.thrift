@@ -17,7 +17,7 @@ struct FieldSchema {
   3: string comment,
 }
 
-sturct Rule {
+struct Rule {
   1: list<string> columns,
   2: string algorithm,
 }
@@ -76,13 +76,16 @@ exception NoSuchObjectException {
   1: string message
 }
 
-service MetaServer {
-  void create_database(1:Database database)
-      throws(1: AlreadyExistsException o1,
-             2: InvalidObjectException o2,
-             3: MetaException o3)
+service ThriftTitanMetaStore {
   Database get_database(1:string name)
       throws(1: NoSuchObjectException o1,
              2: MetaException o2)
 
+  Table get_table(1: string dbName, 2: string tableName)
+      throws(1: NoSuchObjectException o1,
+             2: MetaException o2)
+
+  TableRule get_table_rule(1: string ruleName)
+      throws(1: NoSuchObjectException o1,
+             2: MetaException o2)
 }

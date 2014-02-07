@@ -11,6 +11,7 @@ import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.OkPacket;
 import com.efuture.titan.mysql.parse.MySQLParse;
 import com.efuture.titan.mysql.session.MySQLSessionState;
+import com.efuture.titan.util.ReflectionUtils;
 
 public class CommandProcessorFactory {
   private static final Map<Integer, Class> processorMap =
@@ -40,7 +41,7 @@ public class CommandProcessorFactory {
     int type = MySQLParse.parse(sql);
     Class cls = processorMap.get(type);
     if (cls != null) {
-      CommandProcessor processor = (CommandProcessor) ReflectionUtil.newInstance(cls);
+      CommandProcessor processor = (CommandProcessor) ReflectionUtils.newInstance(cls);
       processor.init(ss);
       return processor;
     } else {      

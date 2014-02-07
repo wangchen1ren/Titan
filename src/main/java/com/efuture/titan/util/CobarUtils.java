@@ -1,64 +1,81 @@
 
 package com.efuture.titan.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.cobar.config.model.*;
 import com.alibaba.cobar.config.model.rule.*;
 
+import com.efuture.titan.common.TitanException;
 import com.efuture.titan.metadata.Meta;
-
 import com.efuture.titan.metastore.*;
 
 public class CobarUtils {
 
-  public static SchemaConfig getSchemaConfigFromMeta(Meta meta, String dbName) {
+  public static SchemaConfig getSchemaConfigFromMeta(Meta meta,
+      String dbName) throws TitanException {
+    SchemaConfig res = null;
     Database db = meta.getDatabase(dbName);
-    String group = db.getGroup();
-    List<String> tableNames = db.getTables();
-    Map<String, TableConfig> tables = new HashMap<String, TableConfig>();
-    for (String t : tableNames) {
-      tables.put(t, getTableConfigFromMeta(meta, db, t));
-    }
-    DataNode node = db.getDataNode();
-    String dataNode = "";
-    if (node != null) {
-      dataNode = node.getName();
-    }
+    if (db != null) {
+      String group = db.getGroup();
+      List<String> tableNames = db.getTables();
+      Map<String, TableConfig> tables = new HashMap<String, TableConfig>();
+      for (String tableName : tableNames) {
+        tables.put(tableName, getTableConfigFromMeta(meta, dbName, tableName));
+      }
+      DataNode node = db.getDataNode();
+      String dataNode = "";
+      if (node != null) {
+        dataNode = node.getName();
+      }
 
-    SchemaConfig res = new SchemaConfig(dbName, dataNode, group, false, tables);
+      res = new SchemaConfig(dbName, dataNode, group, false, tables);
+    }
     return res;
   }
 
-  public static TableConfig getTableConfigFromMeta(Meta meta, String dbName, String tableName) {
+  public static TableConfig getTableConfigFromMeta(Meta meta, String dbName,
+      String tableName) throws TitanException {
+    TableConfig res = null;
     Table tbl = meta.getTable(dbName, tableName);
-    List<DataNode> dataNodes = tbl.getDataNodes();
-    List<String> dataNodeNames = new ArrayList<String>();
-    for (DataNode dataNode : dataNodes) {
-      dataNodeNames.add(dataNode.getName());
-    }
-    String dataNode = StringUtils.join(',', dataNodeNames);
+    if (tbl != null) {
+      List<DataNode> dataNodes = tbl.getDataNodes();
+      List<String> dataNodeNames = new ArrayList<String>();
+      for (DataNode dataNode : dataNodes) {
+        dataNodeNames.add(dataNode.getName());
+      }
+      String dataNode = StringUtils.join(",", dataNodeNames);
 
-    String ruleName = tbl.getTableRule();
-    TableRuleConfig tableRule = null;
-    if (ruleName != null) {
-      tableRule = getTableRuleConfigFromMeta(meta, ruleName);
-    }
-    boolean ruleRequired = rule == null ? false : true;
+      String ruleName = tbl.getTableRule();
+      TableRuleConfig tableRule = null;
+      if (ruleName != null) {
+        tableRule = getTableRuleConfigFromMeta(meta, ruleName);
+      }
+      boolean ruleRequired = (ruleName == null) ? false : true;
 
-    TableConfig res = new TableConfig(tableName, dataNode, tableRule, ruleRequired);
+      res = new TableConfig(tableName, dataNode, tableRule, ruleRequired);
+    }
     return res;
   }
 
-  public static TableRuleConfig getTableRuleConfigFromMeta(Meta meta, String ruleName) {
+  public static TableRuleConfig getTableRuleConfigFromMeta(Meta meta, String ruleName)
+      throws TitanException {
+    TableRuleConfig res = null;
     TableRule tableRule = meta.getTableRule(ruleName);
-    List<Rule> rules = tableRule.getRules();
-    List<RuleConfig> ruleList = new ArrayList<RuleConfig>();
-    for (Rule rule : rules) {
-      String[] columns = rule.getColumns().toArray();
-      String algorithm = rule.getAlgorithm();
-      ruleList.add(new RuleConfig(columns, algorithm));
+    if (tableRule != null) {
+      List<Rule> rules = tableRule.getRules();
+      List<RuleConfig> ruleList = new ArrayList<RuleConfig>();
+      for (Rule rule : rules) {
+        String[] columns = (String[]) rule.getColumns().toArray();
+        String algorithm = rule.getAlgorithm();
+        ruleList.add(new RuleConfig(columns, algorithm));
+      }
+
+      res = new TableRuleConfig(ruleName, ruleList);
     }
-    
-    TableRuleConfig res = new TableRuleConfig(name, ruleList);
     return res;
   }
 }

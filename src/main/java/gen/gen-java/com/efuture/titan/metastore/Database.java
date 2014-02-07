@@ -38,6 +38,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField URI_FIELD_DESC = new org.apache.thrift.protocol.TField("uri", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField TABLES_FIELD_DESC = new org.apache.thrift.protocol.TField("tables", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("group", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField DATA_NODE_FIELD_DESC = new org.apache.thrift.protocol.TField("dataNode", org.apache.thrift.protocol.TType.STRUCT, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -48,12 +51,18 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   public String name; // required
   public String description; // required
   public String uri; // required
+  public List<String> tables; // required
+  public String group; // optional
+  public DataNode dataNode; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
     DESCRIPTION((short)2, "description"),
-    URI((short)3, "uri");
+    URI((short)3, "uri"),
+    TABLES((short)4, "tables"),
+    GROUP((short)5, "group"),
+    DATA_NODE((short)6, "dataNode");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,6 +83,12 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
           return DESCRIPTION;
         case 3: // URI
           return URI;
+        case 4: // TABLES
+          return TABLES;
+        case 5: // GROUP
+          return GROUP;
+        case 6: // DATA_NODE
+          return DATA_NODE;
         default:
           return null;
       }
@@ -114,6 +129,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   }
 
   // isset id assignments
+  private _Fields optionals[] = {_Fields.GROUP,_Fields.DATA_NODE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -123,6 +139,13 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.URI, new org.apache.thrift.meta_data.FieldMetaData("uri", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TABLES, new org.apache.thrift.meta_data.FieldMetaData("tables", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.GROUP, new org.apache.thrift.meta_data.FieldMetaData("group", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.DATA_NODE, new org.apache.thrift.meta_data.FieldMetaData("dataNode", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DataNode.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Database.class, metaDataMap);
   }
@@ -133,12 +156,14 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   public Database(
     String name,
     String description,
-    String uri)
+    String uri,
+    List<String> tables)
   {
     this();
     this.name = name;
     this.description = description;
     this.uri = uri;
+    this.tables = tables;
   }
 
   /**
@@ -154,6 +179,16 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     if (other.isSetUri()) {
       this.uri = other.uri;
     }
+    if (other.isSetTables()) {
+      List<String> __this__tables = new ArrayList<String>(other.tables);
+      this.tables = __this__tables;
+    }
+    if (other.isSetGroup()) {
+      this.group = other.group;
+    }
+    if (other.isSetDataNode()) {
+      this.dataNode = new DataNode(other.dataNode);
+    }
   }
 
   public Database deepCopy() {
@@ -165,6 +200,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     this.name = null;
     this.description = null;
     this.uri = null;
+    this.tables = null;
+    this.group = null;
+    this.dataNode = null;
   }
 
   public String getName() {
@@ -239,6 +277,93 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     }
   }
 
+  public int getTablesSize() {
+    return (this.tables == null) ? 0 : this.tables.size();
+  }
+
+  public java.util.Iterator<String> getTablesIterator() {
+    return (this.tables == null) ? null : this.tables.iterator();
+  }
+
+  public void addToTables(String elem) {
+    if (this.tables == null) {
+      this.tables = new ArrayList<String>();
+    }
+    this.tables.add(elem);
+  }
+
+  public List<String> getTables() {
+    return this.tables;
+  }
+
+  public Database setTables(List<String> tables) {
+    this.tables = tables;
+    return this;
+  }
+
+  public void unsetTables() {
+    this.tables = null;
+  }
+
+  /** Returns true if field tables is set (has been assigned a value) and false otherwise */
+  public boolean isSetTables() {
+    return this.tables != null;
+  }
+
+  public void setTablesIsSet(boolean value) {
+    if (!value) {
+      this.tables = null;
+    }
+  }
+
+  public String getGroup() {
+    return this.group;
+  }
+
+  public Database setGroup(String group) {
+    this.group = group;
+    return this;
+  }
+
+  public void unsetGroup() {
+    this.group = null;
+  }
+
+  /** Returns true if field group is set (has been assigned a value) and false otherwise */
+  public boolean isSetGroup() {
+    return this.group != null;
+  }
+
+  public void setGroupIsSet(boolean value) {
+    if (!value) {
+      this.group = null;
+    }
+  }
+
+  public DataNode getDataNode() {
+    return this.dataNode;
+  }
+
+  public Database setDataNode(DataNode dataNode) {
+    this.dataNode = dataNode;
+    return this;
+  }
+
+  public void unsetDataNode() {
+    this.dataNode = null;
+  }
+
+  /** Returns true if field dataNode is set (has been assigned a value) and false otherwise */
+  public boolean isSetDataNode() {
+    return this.dataNode != null;
+  }
+
+  public void setDataNodeIsSet(boolean value) {
+    if (!value) {
+      this.dataNode = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -265,6 +390,30 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       }
       break;
 
+    case TABLES:
+      if (value == null) {
+        unsetTables();
+      } else {
+        setTables((List<String>)value);
+      }
+      break;
+
+    case GROUP:
+      if (value == null) {
+        unsetGroup();
+      } else {
+        setGroup((String)value);
+      }
+      break;
+
+    case DATA_NODE:
+      if (value == null) {
+        unsetDataNode();
+      } else {
+        setDataNode((DataNode)value);
+      }
+      break;
+
     }
   }
 
@@ -278,6 +427,15 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
 
     case URI:
       return getUri();
+
+    case TABLES:
+      return getTables();
+
+    case GROUP:
+      return getGroup();
+
+    case DATA_NODE:
+      return getDataNode();
 
     }
     throw new IllegalStateException();
@@ -296,6 +454,12 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       return isSetDescription();
     case URI:
       return isSetUri();
+    case TABLES:
+      return isSetTables();
+    case GROUP:
+      return isSetGroup();
+    case DATA_NODE:
+      return isSetDataNode();
     }
     throw new IllegalStateException();
   }
@@ -337,6 +501,33 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (!(this_present_uri && that_present_uri))
         return false;
       if (!this.uri.equals(that.uri))
+        return false;
+    }
+
+    boolean this_present_tables = true && this.isSetTables();
+    boolean that_present_tables = true && that.isSetTables();
+    if (this_present_tables || that_present_tables) {
+      if (!(this_present_tables && that_present_tables))
+        return false;
+      if (!this.tables.equals(that.tables))
+        return false;
+    }
+
+    boolean this_present_group = true && this.isSetGroup();
+    boolean that_present_group = true && that.isSetGroup();
+    if (this_present_group || that_present_group) {
+      if (!(this_present_group && that_present_group))
+        return false;
+      if (!this.group.equals(that.group))
+        return false;
+    }
+
+    boolean this_present_dataNode = true && this.isSetDataNode();
+    boolean that_present_dataNode = true && that.isSetDataNode();
+    if (this_present_dataNode || that_present_dataNode) {
+      if (!(this_present_dataNode && that_present_dataNode))
+        return false;
+      if (!this.dataNode.equals(that.dataNode))
         return false;
     }
 
@@ -386,6 +577,36 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetTables()).compareTo(other.isSetTables());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTables()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tables, other.tables);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGroup()).compareTo(other.isSetGroup());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGroup()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.group, other.group);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDataNode()).compareTo(other.isSetDataNode());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDataNode()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dataNode, other.dataNode);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -429,6 +650,34 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       sb.append(this.uri);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("tables:");
+    if (this.tables == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.tables);
+    }
+    first = false;
+    if (isSetGroup()) {
+      if (!first) sb.append(", ");
+      sb.append("group:");
+      if (this.group == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.group);
+      }
+      first = false;
+    }
+    if (isSetDataNode()) {
+      if (!first) sb.append(", ");
+      sb.append("dataNode:");
+      if (this.dataNode == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dataNode);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -436,6 +685,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (dataNode != null) {
+      dataNode.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -496,6 +748,41 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // TABLES
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                struct.tables = new ArrayList<String>(_list32.size);
+                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
+                {
+                  String _elem34;
+                  _elem34 = iprot.readString();
+                  struct.tables.add(_elem34);
+                }
+                iprot.readListEnd();
+              }
+              struct.setTablesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // GROUP
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.group = iprot.readString();
+              struct.setGroupIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // DATA_NODE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.dataNode = new DataNode();
+              struct.dataNode.read(iprot);
+              struct.setDataNodeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -526,6 +813,32 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         oprot.writeString(struct.uri);
         oprot.writeFieldEnd();
       }
+      if (struct.tables != null) {
+        oprot.writeFieldBegin(TABLES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tables.size()));
+          for (String _iter35 : struct.tables)
+          {
+            oprot.writeString(_iter35);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      if (struct.group != null) {
+        if (struct.isSetGroup()) {
+          oprot.writeFieldBegin(GROUP_FIELD_DESC);
+          oprot.writeString(struct.group);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.dataNode != null) {
+        if (struct.isSetDataNode()) {
+          oprot.writeFieldBegin(DATA_NODE_FIELD_DESC);
+          struct.dataNode.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -553,7 +866,16 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (struct.isSetUri()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetTables()) {
+        optionals.set(3);
+      }
+      if (struct.isSetGroup()) {
+        optionals.set(4);
+      }
+      if (struct.isSetDataNode()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -563,12 +885,27 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (struct.isSetUri()) {
         oprot.writeString(struct.uri);
       }
+      if (struct.isSetTables()) {
+        {
+          oprot.writeI32(struct.tables.size());
+          for (String _iter36 : struct.tables)
+          {
+            oprot.writeString(_iter36);
+          }
+        }
+      }
+      if (struct.isSetGroup()) {
+        oprot.writeString(struct.group);
+      }
+      if (struct.isSetDataNode()) {
+        struct.dataNode.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Database struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -580,6 +917,28 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (incoming.get(2)) {
         struct.uri = iprot.readString();
         struct.setUriIsSet(true);
+      }
+      if (incoming.get(3)) {
+        {
+          org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.tables = new ArrayList<String>(_list37.size);
+          for (int _i38 = 0; _i38 < _list37.size; ++_i38)
+          {
+            String _elem39;
+            _elem39 = iprot.readString();
+            struct.tables.add(_elem39);
+          }
+        }
+        struct.setTablesIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.group = iprot.readString();
+        struct.setGroupIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.dataNode = new DataNode();
+        struct.dataNode.read(iprot);
+        struct.setDataNodeIsSet(true);
       }
     }
   }

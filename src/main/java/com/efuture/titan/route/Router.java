@@ -5,9 +5,10 @@ import com.alibaba.cobar.config.model.SchemaConfig;
 import com.alibaba.cobar.route.RouteResultset;
 import com.alibaba.cobar.route.ServerRouter;
 
+import com.efuture.titan.common.TitanException;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.metadata.Meta;
-import com.efutrue.titan.parse.SemanticAnalyzer;
+import com.efuture.titan.parse.SemanticAnalyzer;
 import com.efuture.titan.session.SessionState;
 
 import com.efuture.titan.util.CobarUtils;
@@ -20,15 +21,19 @@ public class Router {
     this.meta = sem.getMeta();
   }
 
-  public RoutePlan route(String sql, SessionState ss) throws Exception {
+  public RoutePlan route(String sql, SessionState ss) throws TitanException {
     RoutePlan plan = new RoutePlan();
 
-    String db = ss.db;
-    SchemaConfig dbConfig = CobarUtils.getSchemaConfigFromMeta(meta, db);
+    try {
+      String db = ss.db;
+      SchemaConfig dbConfig = CobarUtils.getSchemaConfigFromMeta(meta, db);
 
-    RouteResultset rrs = ServerRouter.route(dbConfig, sql, ss.charset, null);
-    plan.setRouteResultSet(rrs);
-    return plan;
+      RouteResultset rrs = ServerRouter.route(dbConfig, sql, ss.charset, null);
+      plan.setRouteResultSet(rrs);
+      return plan;
+    } catch (Exception e) {
+      throw new TitanException(e.getMessage());
+    }
   }
 
 }

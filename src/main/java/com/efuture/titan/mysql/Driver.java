@@ -12,6 +12,7 @@ import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 
+import com.efuture.titan.common.TitanException;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
@@ -87,7 +88,7 @@ public class Driver implements CommandProcessor {
     } catch (ParserException e) {
       LOG.error("Parse error for '" + sql + "', with exception:" +
           StringUtils.stringifyException(e));
-    } catch (Exception e) {
+    } catch (TitanException e) {
       //
     }
    
