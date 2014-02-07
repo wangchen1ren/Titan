@@ -11,19 +11,20 @@ struct Version {
   2: string comments
 }
 
-struct Database {
-  1: string name,
-  2: string description,
-  3: string uri,
-}
-
 struct FieldSchema {
   1: string name,
   2: string type,
   3: string comment,
 }
 
-struct PartitionRule {
+sturct Rule {
+  1: list<string> columns,
+  2: string algorithm,
+}
+
+struct TableRule {
+  1: string name,
+  2: list<Rule> rules,
 }
 
 struct DataNode {
@@ -35,12 +36,11 @@ struct Table {
   1: string name,
   2: string description,
   3: string dbName,
-
   4: string tableType,
 
   # partition
   5: FieldSchema partitionKey,
-  6: PartitionRule rule,
+  6: string tableRule,
   7: list<DataNode> dataNodes,
 
   # for table join
@@ -48,6 +48,17 @@ struct Table {
   9: string parentTable,
   10: FieldSchema parentJoinKey,
   11: FieldSchema joinKey,
+
+  12: optional string rule,
+}
+
+struct Database {
+  1: string name,
+  2: string description,
+  3: string uri,
+  4: list<string> tables,
+  5: optional string group,
+  6: optional DataNode dataNode,
 }
 
 exception MetaException {

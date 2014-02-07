@@ -4,8 +4,17 @@ package com.efuture.titan.route;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.cobar.route.RouteResultset;
 
 public class RoutePlan {
 
-  private List<QueryNode> queryNodes;
+  private RouteResultset rrs;
+
+  public RoutePlan() {
+  }
+
+  public void setRouteResultSet(RouteResultset rrs) {
+    this.rrs = rrs;
+  }
+
 }

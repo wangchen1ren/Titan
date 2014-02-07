@@ -1,5 +1,5 @@
 
-package com.efuture.titan.mysql.parse;
+package com.efuture.titan.parse;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
 
@@ -11,12 +11,20 @@ public class SemanticAnalyzer {
   private TitanConf conf;
 
   private Meta meta;
+
+  private String statement;
   
 
   public SemanticAnalyzer(TitanConf conf) {
     this.conf = conf;
+    meta = Meta.get(conf);
   }
 
   public void analyze(SQLStatement statement) {
+    // do nothing
+  }
+
+  public Meta getMeta() {
+    return meta;
   }
 }

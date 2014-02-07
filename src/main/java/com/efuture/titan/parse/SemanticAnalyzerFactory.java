@@ -1,5 +1,5 @@
 
-package com.efuture.titan.mysql.parse;
+package com.efuture.titan.parse;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
 

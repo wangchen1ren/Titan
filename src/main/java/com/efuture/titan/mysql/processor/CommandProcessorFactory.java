@@ -13,9 +13,10 @@ import com.efuture.titan.mysql.parse.MySQLParse;
 import com.efuture.titan.mysql.session.MySQLSessionState;
 
 public class CommandProcessorFactory {
-  private static final Map<Integer, CommandProcessor> processorMap =
-      new HashMap<Integer, CommandProcessor>();
+  private static final Map<Integer, Class> processorMap =
+      new HashMap<Integer, Class>();
   static {
+    processorMap.put(MySQLParse.SELECT, SelectProcessor.class);
     /*
     processorMap.put(MySQLParse.BEGIN, new UnsupportedProcessor());
     processorMap.put(MySQLParse.COMMIT, new CommitProcessor());
@@ -26,7 +27,6 @@ public class CommandProcessorFactory {
     processorMap.put(MySQLParse.MYSQL_COMMENT, new CommentProcessor());
     processorMap.put(MySQLParse.ROLLBACK, new RollbackProcessor());
     processorMap.put(MySQLParse.SAVEPOINT, new UnsupportedProcessor());
-    processorMap.put(MySQLParse.SELECT, new SelectProcessor());
     processorMap.put(MySQLParse.SET, new SetProcessor());
     processorMap.put(MySQLParse.SHOW, new ShowProcessor());
     processorMap.put(MySQLParse.START, new StartProcessor());
@@ -38,8 +38,10 @@ public class CommandProcessorFactory {
 
   public static CommandProcessor get(MySQLSessionState ss, String sql) {
     int type = MySQLParse.parse(sql);
-    CommandProcessor processor = processorMap.get(type);
-    if (processor != null) {
+    Class cls = processorMap.get(type);
+    if (cls != null) {
+      CommandProcessor processor = (CommandProcessor) ReflectionUtil.newInstance(cls);
+      processor.init(ss);
       return processor;
     } else {      
       // Driver
