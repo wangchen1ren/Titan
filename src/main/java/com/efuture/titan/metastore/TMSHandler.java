@@ -1,6 +1,9 @@
 
 package com.efuture.titan.metastore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -10,6 +13,10 @@ public class TMSHandler implements ITMSHandler {
 
   private String name;
   private TitanConf conf;
+
+  private Map<String, Database> dbMap;
+  private Map<String, Map<String, Table>> tableMap;
+  private Map<String, TableRule> tableRuleMap;
 
   private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
     @Override
@@ -29,25 +36,38 @@ public class TMSHandler implements ITMSHandler {
   public TMSHandler(String name, TitanConf conf) {
     this.name = name;
     this.conf = conf;
+
+    initMeta();
   }
 
   public void setConf(TitanConf conf) {
     this.conf = conf;
   }
 
+  public void initMeta() {
+    dbMap = new HashMap<String, Database>();
+    tableMap = new HashMap<String, Map<String, Table>>();
+    tableRuleMap = new HashMap<String, TableRule>();
+  }
+
   public Database get_database(String dbName)
       throws NoSuchObjectException, MetaException {
-    return null;
+    return dbMap.get(dbName);
   }
 
   public Table get_table(String dbName, String tableName)
       throws NoSuchObjectException, MetaException {
-    return null;
+    Table res = null;
+    Map<String, Table> tables = tableMap.get(dbName);
+    if (tables != null) {
+      res = tables.get(tableName);
+    }
+    return res;
   }
 
   public TableRule get_table_rule(String ruleName)
       throws NoSuchObjectException, MetaException {
-    return null;
+    return tableRuleMap.get(ruleName);
   }
 }
 
