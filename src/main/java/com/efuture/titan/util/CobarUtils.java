@@ -42,12 +42,8 @@ public class CobarUtils {
     TableConfig res = null;
     Table tbl = meta.getTable(dbName, tableName);
     if (tbl != null) {
-      List<DataNode> dataNodes = tbl.getDataNodes();
-      List<String> dataNodeNames = new ArrayList<String>();
-      for (DataNode dataNode : dataNodes) {
-        dataNodeNames.add(dataNode.getName());
-      }
-      String dataNode = StringUtils.join(",", dataNodeNames);
+      List<String> dataNodes = tbl.getDataNodes();
+      String dataNode = StringUtils.join(",", dataNodes);
 
       String ruleName = tbl.getTableRule();
       TableRuleConfig tableRule = null;

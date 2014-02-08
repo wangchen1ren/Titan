@@ -1,22 +1,19 @@
 
 package com.efuture.titan.metastore;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.common.conf.TitanConf.ConfVars;
 
 public class TMSHandler implements ITMSHandler {
 
   private String name;
   private TitanConf conf;
-
-  private Map<String, Database> dbMap;
-  private Map<String, Map<String, Table>> tableMap;
-  private Map<String, TableRule> tableRuleMap;
+  private MetaContent content;
 
   private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
     @Override
@@ -36,38 +33,58 @@ public class TMSHandler implements ITMSHandler {
   public TMSHandler(String name, TitanConf conf) {
     this.name = name;
     this.conf = conf;
-
-    initMeta();
+    this.content = new MetaContent(conf);
   }
 
+  @Override
   public void setConf(TitanConf conf) {
     this.conf = conf;
   }
 
-  public void initMeta() {
-    dbMap = new HashMap<String, Database>();
-    tableMap = new HashMap<String, Map<String, Table>>();
-    tableRuleMap = new HashMap<String, TableRule>();
-  }
-
+  @Override
   public Database get_database(String dbName)
       throws NoSuchObjectException, MetaException {
-    return dbMap.get(dbName);
+    try {
+      Database res = content.getDatabases().get(dbName);
+      if (res == null) {
+        throw new NoSuchObjectException("Database " + dbName + " not found");
+      }
+      return res;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
+    }
   }
 
+  @Override
   public Table get_table(String dbName, String tableName)
       throws NoSuchObjectException, MetaException {
-    Table res = null;
-    Map<String, Table> tables = tableMap.get(dbName);
-    if (tables != null) {
-      res = tables.get(tableName);
+    try {
+      Table res = null;
+      Map<String, Table> tables = content.getTables().get(dbName);
+      if (tables != null) {
+        res = tables.get(tableName);
+      }
+      if (res == null) {
+        throw new NoSuchObjectException("Table " + dbName + "." + tableName + " not found");
+      }
+      return res;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
     }
-    return res;
   }
 
+  @Override
   public TableRule get_table_rule(String ruleName)
       throws NoSuchObjectException, MetaException {
-    return tableRuleMap.get(ruleName);
+    try {
+      TableRule res = content.getTableRules().get(ruleName);
+      if (res == null) {
+        throw new NoSuchObjectException("TableRule " + ruleName + " not found");
+      }
+      return res;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
+    }
   }
 }
 

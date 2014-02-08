@@ -27,12 +27,14 @@ public class TitanConf extends Configuration {
     // server
     TITAN_SERVER_PORT("titan.server.port", (int)8066),
     TITAN_SERVER_AUTHORIZATION_ENABLED("titan.server.authorization.enabled", false),
+    TITAN_SERVER_SESSION_MODE("titan.server.session.mode", "blocking"),
 
     // metastore
     TITAN_METASTORE_PORT("titan.metastore.port", 21112),
     TITAN_METASTORE_TCP_KEEP_ALIVE("titan.metastore.tcp.keep.alive", false),
     TITAN_METASTORE_MIN_WORKERS("titan.metastore.min.workers", 0),
     TITAN_METASTORE_MAX_WORKERS("titan.metastore.max.workers", 0),
+    TITAN_METASTORE_LOAD_MODE("titan.metastore.load.mode", "xml"),
 
     // metastore client
     TITAN_METASTORE_URI("titan.metastore.uri", ""),

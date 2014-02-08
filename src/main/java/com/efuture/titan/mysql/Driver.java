@@ -78,7 +78,7 @@ public class Driver implements CommandProcessor {
 
       // Authorization
       if (conf.getBoolVar(ConfVars.TITAN_SERVER_AUTHORIZATION_ENABLED)) {
-        doAuthorization();
+        doAuthorization(sem);
       }
 
       // Route
@@ -97,11 +97,12 @@ public class Driver implements CommandProcessor {
     return 0;
   }
 
-  public int execute() {
-    return 0;
+  public void doAuthorization(SemanticAnalyzer sem) {
+    // pass
   }
 
-  public void doAuthorization() {
+  public int execute() {
+    return 0;
   }
 
 }

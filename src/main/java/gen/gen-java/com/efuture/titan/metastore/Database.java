@@ -751,13 +751,13 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
           case 4: // TABLES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
-                struct.tables = new ArrayList<String>(_list32.size);
-                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
+                org.apache.thrift.protocol.TList _list48 = iprot.readListBegin();
+                struct.tables = new ArrayList<String>(_list48.size);
+                for (int _i49 = 0; _i49 < _list48.size; ++_i49)
                 {
-                  String _elem34;
-                  _elem34 = iprot.readString();
-                  struct.tables.add(_elem34);
+                  String _elem50;
+                  _elem50 = iprot.readString();
+                  struct.tables.add(_elem50);
                 }
                 iprot.readListEnd();
               }
@@ -817,9 +817,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         oprot.writeFieldBegin(TABLES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tables.size()));
-          for (String _iter35 : struct.tables)
+          for (String _iter51 : struct.tables)
           {
-            oprot.writeString(_iter35);
+            oprot.writeString(_iter51);
           }
           oprot.writeListEnd();
         }
@@ -888,9 +888,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (struct.isSetTables()) {
         {
           oprot.writeI32(struct.tables.size());
-          for (String _iter36 : struct.tables)
+          for (String _iter52 : struct.tables)
           {
-            oprot.writeString(_iter36);
+            oprot.writeString(_iter52);
           }
         }
       }
@@ -920,13 +920,13 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.tables = new ArrayList<String>(_list37.size);
-          for (int _i38 = 0; _i38 < _list37.size; ++_i38)
+          org.apache.thrift.protocol.TList _list53 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.tables = new ArrayList<String>(_list53.size);
+          for (int _i54 = 0; _i54 < _list53.size; ++_i54)
           {
-            String _elem39;
-            _elem39 = iprot.readString();
-            struct.tables.add(_elem39);
+            String _elem55;
+            _elem55 = iprot.readString();
+            struct.tables.add(_elem55);
           }
         }
         struct.setTablesIsSet(true);

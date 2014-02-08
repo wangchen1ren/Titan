@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.common.conf.TitanConf.ConfVars;
 import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.security.Authenticator;
+import com.efuture.titan.security.Authorizer;
 
 public class SessionState {
 
@@ -25,6 +27,11 @@ public class SessionState {
   public String host;
 
   public long lastInsertId;
+
+  private Authenticator authenticator = null;
+  private Authorizer authorizer = null;
+
+  private Session session;
 
   public static SessionState get(FrontendConnection conn) {
     SessionState ss = sessionMap.get(conn);
@@ -60,7 +67,27 @@ public class SessionState {
   }
 
   public Authenticator getAuthenticator() {
-    return null;
+    return authenticator;
   }
+
+  public Authorizer getAuthorizer() {
+    return authorizer;
+  }
+
+  public Session getSession() {
+    if (session == null) {
+      String sessionMode = conf.getVar(ConfVars.TITAN_SERVER_SESSION_MODE).toUpperCase();
+      if (sessionMode.equals("BLOCKING")) {
+        session = new BlockingSession();
+      } else if (sessionMode.equals("NONBLOCKING")) {
+        session = new NonblockingSession();
+      } else {
+        // default blocking
+        session = new BlockingSession();
+      }
+    }
+    return session;
+  }
+
 
 }

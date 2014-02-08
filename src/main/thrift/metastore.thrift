@@ -27,9 +27,14 @@ struct TableRule {
   2: list<Rule> rules,
 }
 
+struct DataSource {
+  1: string name,
+  2: list<string> addresses,
+}
+
 struct DataNode {
   1: string name,
-#  2: DataSource source,
+  2: list<DataSource> sources,
 }
 
 struct Table {
@@ -40,13 +45,13 @@ struct Table {
 
   # partition
   5: FieldSchema partitionKey,
-  7: list<DataNode> dataNodes,
+  7: list<string> dataNodes,
 
   # for table join
-  8: list<string> childTables,
-  9: string parentTable,
-  10: FieldSchema parentJoinKey,
-  11: FieldSchema joinKey,
+  8: optional list<string> childTables,
+  9: optional string parentTable,
+  10: optional FieldSchema parentJoinKey,
+  11: optional FieldSchema joinKey,
 
   12: optional string tableRule,
 }

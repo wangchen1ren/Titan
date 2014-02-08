@@ -36,9 +36,11 @@ public class TitanMetaStoreClient implements IMetaStoreClient {
     }
   }
 
+  @Override
   public void reconnect() throws MetaException {
   }
 
+  @Override
   public void close() {
     isConnected = false;
     if (transport != null && transport.isOpen()) {
@@ -46,16 +48,19 @@ public class TitanMetaStoreClient implements IMetaStoreClient {
     }
   }
 
+  @Override
   public Database getDatabase(String dbName)
       throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_database(dbName));
   }
 
+  @Override
   public Table getTable(String dbName, String tableName)
       throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_table(dbName, tableName));
   }
 
+  @Override
   public TableRule getTableRule(String ruleName)
       throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_table_rule(ruleName));
