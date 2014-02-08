@@ -8,20 +8,26 @@ import org.apache.commons.logging.LogFactory;
 
 import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.metadata.Meta;
+import com.efuture.titan.metastore.NoSuchObjectException;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
+import com.efuture.titan.mysql.net.packet.AuthPacket;
 import com.efuture.titan.mysql.net.packet.OkPacket;
 import com.efuture.titan.mysql.net.packet.MySQLPacket;
 import com.efuture.titan.mysql.processor.CommandProcessor;
 import com.efuture.titan.mysql.processor.CommandProcessorFactory;
 import com.efuture.titan.mysql.session.MySQLSessionState;
+import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.net.NIOHandler;
+import com.efuture.titan.security.AuthenticationException;
 import com.efuture.titan.security.Authenticator;
+import com.efuture.titan.security.AuthorizationException;
+import com.efuture.titan.security.Authorizer;
 import com.efuture.titan.session.SessionState;
 
 public class MySQLNIOHandler extends NIOHandler {
   private static final Log LOG = LogFactory.getLog(MySQLNIOHandler.class);
-  private static final byte[] AUTH_OK = new byte[] { 7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0 };
 
   private boolean isAuthenticated = false;
 
@@ -49,11 +55,27 @@ public class MySQLNIOHandler extends NIOHandler {
   /*==================================*/
 
   private void authenticate(MySQLSessionState ss, byte[] data) {
-    Authenticator auth = ss.getAuthenticator();
-    if (auth == null) {
+    Authenticator authen = ss.getAuthenticator();
+    if (authen == null) {
+      LOG.warn("No authenticator, pass authenticate");
       ss.isAuthenticated = true;
     }
-    ss.getFrontendConnection().write(AUTH_OK);
+    AuthPacket auth = new AuthPacket();
+    auth.read(data);
+    try {
+      authen.authenticate(auth.user, auth.password);
+      if (auth.database != null && checkSetDb(ss, auth.database)) {
+        ss.db = auth.database;
+        ss.getFrontendConnection().write(AuthPacket.AUTH_OK);
+      }
+    } catch (AuthenticationException e) {
+      String msg = "Access denied for user '" + auth.user + "'";
+      LOG.warn("Authentication Failed: " + msg);
+      ss.getFrontendConnection().writeErrMessage(
+          (byte) 2, 
+          ErrorCode.ER_ACCESS_DENIED_ERROR,
+          msg);
+    }
   }
 
   /*==================================*/
@@ -63,36 +85,49 @@ public class MySQLNIOHandler extends NIOHandler {
   private void processCommand(MySQLSessionState ss, byte[] data) {
     switch (data[4]) {
       case MySQLPacket.COM_INIT_DB:
-        //initDb(conn, data);
+        LOG.info("[Command] INIT_DB");
+        initDb(ss, data);
         break;
       case MySQLPacket.COM_QUERY:
+        LOG.info("[Command] QUERY");
         query(ss, data);
         break;
       case MySQLPacket.COM_PING:
-        //ping(conn);
+        LOG.info("[Command] PING");
+        ss.getFrontendConnection().write(OkPacket.OK);
         break;
       case MySQLPacket.COM_QUIT:
-        //quit(conn);
+        LOG.info("[Command] QUIT");
+        ss.getFrontendConnection().close();
         break;
       case MySQLPacket.COM_PROCESS_KILL:
-        //source.kill(data);
+        LOG.info("[Command] PROCESS_KILL");
+        ss.getFrontendConnection().writeErrMessage(
+            ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         break;
       case MySQLPacket.COM_STMT_PREPARE:
-        //source.stmtPrepare(data);
+        LOG.info("[Command] STATEMENT_PREPARE");
+        ss.getFrontendConnection().writeErrMessage(
+            ErrorCode.ER_UNKNOWN_COM_ERROR, "Prepare unsupported!");
         break;
       case MySQLPacket.COM_STMT_EXECUTE:
-        //source.stmtExecute(data);
+        LOG.info("[Command] STATEMENT_EXECUTE");
+        ss.getFrontendConnection().writeErrMessage(
+            ErrorCode.ER_UNKNOWN_COM_ERROR, "Prepare unsupported!");
         break;
       case MySQLPacket.COM_STMT_CLOSE:
-        //source.stmtClose(data);
+        LOG.info("[Command] STATEMENT_CLOSE");
+        ss.getFrontendConnection().writeErrMessage(
+            ErrorCode.ER_UNKNOWN_COM_ERROR, "Prepare unsupported!");
         break;
       case MySQLPacket.COM_HEARTBEAT:
-        //source.heartbeat(data);
+        LOG.info("[Command] HEARTBEAT");
+        ss.getFrontendConnection().write(OkPacket.OK);
         break;
       default:
-        MySQLFrontendConnection conn = (MySQLFrontendConnection) ss.getFrontendConnection();
-        conn.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
-        //source.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
+        LOG.info("[Command] UNKNOWN");
+        ss.getFrontendConnection().writeErrMessage(
+            ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         break;
     }
   }
@@ -101,8 +136,8 @@ public class MySQLNIOHandler extends NIOHandler {
   /*             Commands             */
   /*==================================*/
 
-  private void initDb(MySQLFrontendConnection conn, byte[] data) {
-    MySQLSessionState ss = MySQLSessionState.get(conn);
+  private void initDb(MySQLSessionState ss, byte[] data) {
+    FrontendConnection conn = ss.getFrontendConnection();
 
     MySQLMessage mm = new MySQLMessage(data);
     mm.position(5);
@@ -117,40 +152,44 @@ public class MySQLNIOHandler extends NIOHandler {
             "Not allowed to change the database!");
       }
       return;
-    }   
-
-    // temporary
-    // TODO
-    ss.db = db;
-    conn.write(OkPacket.OK);
-
-    /*
-    // 检查schema的有效性
-    if (db == null || !privileges.schemaExists(db)) {
-      writeErrMessage(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '"
-          + db + "'");
-      return;
-    }   
-    if (!privileges.userExists(user, host)) {
-      writeErrMessage(ErrorCode.ER_ACCESS_DENIED_ERROR,
-          "Access denied for user '" + user + "'");
-      return;
-    }   
-    Set<String> schemas = privileges.getUserSchemas(user);
-    if (schemas == null || schemas.size() == 0 || schemas.contains(db)) {
-      this.schema = db; 
-      write(writeToBuffer(OkPacket.OK, allocate()));
-    } else {
-      String s = "Access denied for user '" + user + "' to database '"
-          + db + "'";
-      writeErrMessage(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
     }
-    */
+    if (checkSetDb(ss, db)) {
+      ss.db = db;
+      conn.write(OkPacket.OK);
+    }
+  }
+
+  private boolean checkSetDb(MySQLSessionState ss, String db) {
+    FrontendConnection conn = ss.getFrontendConnection();
+
+    try {
+      // check db exists
+      Meta meta = Meta.get(ss.getConf());
+      meta.getDatabase(db);
+    } catch (Exception e) {
+      conn.writeErrMessage(
+          ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + db + "'");
+      return false;
+    }
+    String user = ss.getAuthenticator().getUser();
+    try {
+      // check user has privilege
+      Authorizer authorizer = ss.getAuthorizer();
+      if (authorizer != null) {
+        authorizer.authorize(user, db);
+      }
+    } catch (AuthorizationException e) {
+      String s = "Access denied for user '" + user +
+          "' to database '" + db + "'";
+      conn.writeErrMessage(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
+      return false;
+    }
+    return true;
   }
 
 
   private void query(MySQLSessionState ss, byte[] data) {
-    MySQLFrontendConnection conn = (MySQLFrontendConnection) ss.getFrontendConnection();
+    FrontendConnection conn = ss.getFrontendConnection();
     // 取得语句
     MySQLMessage mm = new MySQLMessage(data);
     mm.position(5);
@@ -176,15 +215,6 @@ public class MySQLNIOHandler extends NIOHandler {
     // 执行查询
     CommandProcessor processor = CommandProcessorFactory.get(ss, sql);
     processor.run(sql);
-  }
-
-  private void ping(MySQLFrontendConnection conn) {
-    //TODO
-  }
-
-  private void quit(MySQLFrontendConnection conn) {
-    LOG.info("Quit Command.");
-    conn.close();
   }
 
 }

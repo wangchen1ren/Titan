@@ -28,6 +28,9 @@ public class SessionState {
 
   public long lastInsertId;
 
+  public boolean txInterrupted;
+  public boolean txIsolation; 
+
   private Authenticator authenticator = null;
   private Authorizer authorizer = null;
 
@@ -74,20 +77,19 @@ public class SessionState {
     return authorizer;
   }
 
+  public void setSession(Session session) {
+    this.session = session;
+  }
+
   public Session getSession() {
-    if (session == null) {
-      String sessionMode = conf.getVar(ConfVars.TITAN_SERVER_SESSION_MODE).toUpperCase();
-      if (sessionMode.equals("BLOCKING")) {
-        session = new BlockingSession();
-      } else if (sessionMode.equals("NONBLOCKING")) {
-        session = new NonblockingSession();
-      } else {
-        // default blocking
-        session = new BlockingSession();
-      }
-    }
     return session;
   }
 
+  public void close() {
+    // close session
+    session.close();
+    // remove from map
+    SessionState.remove(feConn);
+  }
 
 }

@@ -20,6 +20,7 @@ public class Meta {
 
   private TitanConf conf;
   private IMetaStoreClient metaStoreClient;
+  private MetaCacher cache;
 
   public static Meta get(TitanConf conf) throws MetaException {
     boolean needRefresh = false;
@@ -39,9 +40,14 @@ public class Meta {
 
   public Meta(TitanConf conf) {
     this.conf = conf;
+    this.cache = new MetaCacher(conf);
   }
 
   public void close() {
+    if (metaStoreClient != null) {
+      metaStoreClient.close();
+    }
+    cache.clear();
   }
 
   private IMetaStoreClient getMSC() throws MetaException {
@@ -64,6 +70,7 @@ public class Meta {
 
   public Database getDatabase(String dbName) throws TitanException {
     try {
+      // TODO use cache
       return getMSC().getDatabase(dbName);
     } catch (NoSuchObjectException e) {
       return null;

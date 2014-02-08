@@ -5,7 +5,7 @@ import com.efuture.titan.net.FrontendConnection;
 
 public interface Session {
 
-  FrontendConnection getFrontendConnection();
+  SessionState getSessionState();
 
   void execute();
 
@@ -16,5 +16,7 @@ public interface Session {
   void cancel();
 
   void terminate();
+
+  void close();
 
 }

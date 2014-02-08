@@ -34,4 +34,9 @@ public abstract class FrontendConnection extends AbstractConnection {
     });
   }
 
+  public void writeErrMessage(int errno, String msg) {
+    writeErrMessage((byte) 1, errno, msg);
+  }
+
+  abstract public void writeErrMessage(byte id, int errno, String msg);
 }

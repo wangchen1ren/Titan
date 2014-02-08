@@ -48,7 +48,8 @@ public class MySQLFrontendConnection extends FrontendConnection {
 
   @Override
   public void closeSession() {
-    MySQLSessionState.remove(this);
+    //MySQLSessionState.remove(this);
+    ss.close();
   }
 
   @Override
@@ -186,10 +187,7 @@ public class MySQLFrontendConnection extends FrontendConnection {
     super.close();
   }
 
-  public void writeErrMessage(int errno, String msg) {
-    writeErrMessage((byte) 1, errno, msg);
-  }
-
+  @Override
   public void writeErrMessage(byte id, int errno, String msg) {
     //TODO
     //ErrorPacket err = new ErrorPacket(id, errno,
