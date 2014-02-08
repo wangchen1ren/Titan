@@ -6,7 +6,8 @@ import java.util.Map;
 
 import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
-import com.efuture.titan.mysql.Driver;
+import com.efuture.titan.exec.CommandProcessor;
+import com.efuture.titan.exec.Driver;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.OkPacket;
 import com.efuture.titan.mysql.parse.MySQLParse;

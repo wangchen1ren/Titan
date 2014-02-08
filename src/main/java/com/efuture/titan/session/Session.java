@@ -1,13 +1,13 @@
 
 package com.efuture.titan.session;
 
-import com.efuture.titan.net.FrontendConnection;
+import com.efuture.titan.exec.QueryPlan;
 
 public interface Session {
 
   SessionState getSessionState();
 
-  void execute();
+  void execute(QueryPlan plan);
 
   void commit();
 

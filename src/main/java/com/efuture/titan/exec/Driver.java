@@ -1,5 +1,5 @@
 
-package com.efuture.titan.mysql;
+package com.efuture.titan.exec;
 
 import java.util.List;
 
@@ -15,35 +15,31 @@ import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.efuture.titan.common.TitanException;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
-import com.efuture.titan.mysql.net.MySQLFrontendConnection;
-import com.efuture.titan.mysql.processor.CommandProcessor;
-import com.efuture.titan.mysql.session.MySQLSessionState;
+import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.parse.SemanticAnalyzer;
 import com.efuture.titan.parse.SemanticAnalyzerFactory;
-import com.efuture.titan.route.Router;
-import com.efuture.titan.route.RoutePlan;
 import com.efuture.titan.security.Authorizer;
 import com.efuture.titan.session.BlockingSession;
 import com.efuture.titan.session.Session;
+import com.efuture.titan.session.SessionState;
 import com.efuture.titan.util.StringUtils;
 
 public class Driver implements CommandProcessor {
   private static final Log LOG = LogFactory.getLog(Driver.class);
 
   private TitanConf conf;
-  private MySQLSessionState ss;
-  private MySQLFrontendConnection conn;
+  private SessionState ss;
 
-  private RoutePlan plan;
+  private QueryPlan plan;
 
   public Driver() {
   }
 
-  public Driver(MySQLSessionState ss) {
+  public Driver(SessionState ss) {
     init(ss);
   }
 
-  public void init(MySQLSessionState ss) {
+  public void init(SessionState ss) {
     this.ss = ss;
     this.conf = ss.getConf();
   }
@@ -84,15 +80,12 @@ public class Driver implements CommandProcessor {
         doAuthorization(sem);
       }
 
-      // Route
-      Router router = new Router(sem);
-      plan = router.route(sql, ss);
-
+      plan = new QueryPlan(ss, sem);
     } catch (ParserException e) {
       LOG.error("Parse error for '" + sql + "', with exception:" +
           StringUtils.stringifyException(e));
     } catch (TitanException e) {
-      //
+      LOG.error("Exception: ", e);
     }
    
     // post-compile-hook
@@ -122,6 +115,7 @@ public class Driver implements CommandProcessor {
       ss.setSession(session);
     }
 
+    session.execute(plan);
     return 0;
   }
 

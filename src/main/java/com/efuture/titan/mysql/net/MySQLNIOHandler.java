@@ -8,13 +8,13 @@ import org.apache.commons.logging.LogFactory;
 
 import com.alibaba.cobar.config.ErrorCode;
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.exec.CommandProcessor;
 import com.efuture.titan.metadata.Meta;
 import com.efuture.titan.metastore.NoSuchObjectException;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.net.packet.AuthPacket;
 import com.efuture.titan.mysql.net.packet.OkPacket;
 import com.efuture.titan.mysql.net.packet.MySQLPacket;
-import com.efuture.titan.mysql.processor.CommandProcessor;
 import com.efuture.titan.mysql.processor.CommandProcessorFactory;
 import com.efuture.titan.mysql.session.MySQLSessionState;
 import com.efuture.titan.net.FrontendConnection;

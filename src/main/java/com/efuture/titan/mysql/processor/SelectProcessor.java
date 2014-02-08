@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import com.alibaba.cobar.config.ErrorCode;
-import com.efuture.titan.mysql.Driver;
+import com.efuture.titan.exec.CommandProcessor;
+import com.efuture.titan.exec.Driver;
 import com.efuture.titan.mysql.net.MySQLFrontendConnection;
 import com.efuture.titan.mysql.parse.MySQLParse;
 import com.efuture.titan.mysql.parse.ParseSelect;
-import com.efuture.titan.mysql.session.MySQLSessionState;
 import com.efuture.titan.mysql.response.Response;
 import com.efuture.titan.mysql.response.SelectDatabaseResponse;
 import com.efuture.titan.mysql.response.SelectIdentityResponse;
@@ -20,6 +20,7 @@ import com.efuture.titan.mysql.response.SelectVersionResponse;
 import com.efuture.titan.mysql.response.SelectVersionCommentResponse;
 import com.efuture.titan.mysql.response.SessionIncrementResponse;
 import com.efuture.titan.mysql.response.SessionIsolationResponse;
+import com.efuture.titan.session.SessionState;
 import com.efuture.titan.util.ReflectionUtils;
 
 // TO BE REMOVED
@@ -40,7 +41,7 @@ public class SelectProcessor implements CommandProcessor {
 
   private MySQLFrontendConnection conn;
 
-  public void init(MySQLSessionState ss) {
+  public void init(SessionState ss) {
     this.conn = (MySQLFrontendConnection) ss.getFrontendConnection();
   }
 
@@ -49,7 +50,7 @@ public class SelectProcessor implements CommandProcessor {
     int selectOp = ParseSelect.parse(sql);
     if (selectOp == ParseSelect.OTHER) {
       Driver driver = new Driver();
-      driver.init(MySQLSessionState.get(conn));
+      driver.init(SessionState.get(conn));
       driver.run(sql);
     } else {
       Class responseClass = responseMap.get(selectOp);
