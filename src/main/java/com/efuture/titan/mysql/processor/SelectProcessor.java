@@ -34,8 +34,6 @@ public class SelectProcessor implements CommandProcessor {
     responseMap.put(ParseSelect.VERSION_COMMENT, SelectVersionCommentResponse.class);
     responseMap.put(ParseSelect.USER, SelectUserResponse.class);
     responseMap.put(ParseSelect.VERSION, SelectVersionResponse.class);
-    responseMap.put(ParseSelect.SESSION_INCREMENT, SessionIncrementResponse.class);
-    responseMap.put(ParseSelect.SESSION_ISOLATION, SessionIsolationResponse.class);
     responseMap.put(ParseSelect.IDENTITY, SelectIdentityResponse.class);
     responseMap.put(ParseSelect.LAST_INSERT_ID, SelectLastInsertIdResponse.class);
   }

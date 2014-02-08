@@ -29,7 +29,7 @@ public class DriverTest extends TestCase {
 
   public void testCompile() {
     try {
-      String sql = "select /*balance*/1 from t as t1; create table;";
+      String sql = "select /*balance*/1 from t as t1;";
       driver.compile(sql);
     } catch (Exception e) {
       fail("Error in test: " + StringUtils.stringifyException(e));

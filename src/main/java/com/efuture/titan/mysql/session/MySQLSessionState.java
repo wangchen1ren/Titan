@@ -22,8 +22,6 @@ public class MySQLSessionState extends SessionState {
 
   public MySQLSessionState(TitanConf conf, MySQLFrontendConnection conn) {
     super(conf, conn);
-    // TODO
-    isAuthenticated = true;
   }
 
   @Override
