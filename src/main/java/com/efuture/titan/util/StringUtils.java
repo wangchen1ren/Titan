@@ -887,6 +887,18 @@ public class StringUtils {
     return str.toString();
   }
 
+  public static String decodeString(byte[] src, String charset) {
+    return decodeString(src, 0, src.length, charset);
+  }
+
+  public static String decodeString(byte[] src, int offset, int length, String charset) {
+    try {
+      return new String(src, offset, length, charset);
+    } catch (UnsupportedEncodingException e) {
+      return new String(src, offset, length);
+    }
+  }
+
   public static byte[] encodeString(String str, String charset) {
     if (str == null) {
       return null;

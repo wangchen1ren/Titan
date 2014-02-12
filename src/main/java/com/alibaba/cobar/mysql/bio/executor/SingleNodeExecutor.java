@@ -211,7 +211,7 @@ public final class SingleNodeExecutor extends NodeExecutor {
                 break;
             }
             default: // HEADER|FIELDS|FIELD_EOF|ROWS|LAST_EOF
-                handleResultSet(rrn, ss, mc, bin, flag);
+                //handleResultSet(rrn, ss, mc, bin, flag);
             }
         } catch (IOException e) {
             LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);

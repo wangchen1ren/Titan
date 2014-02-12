@@ -29,12 +29,18 @@ struct TableRule {
 
 struct DataSource {
   1: string name,
-  2: list<string> addresses,
+  2: string type,
+  3: string host,
+  4: i32 port,
+  5: string user,
+  6: string password,
+  7: string db,
+  8: string sqlMode,
 }
 
 struct DataNode {
   1: string name,
-  2: list<DataSource> sources,
+  2: list<DataSource> dataSources,
 }
 
 struct Table {

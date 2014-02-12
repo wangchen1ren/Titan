@@ -15,12 +15,11 @@ import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.efuture.titan.common.TitanException;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
+import com.efuture.titan.exec.blocking.BlockingExecutor;
 import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.parse.SemanticAnalyzer;
 import com.efuture.titan.parse.SemanticAnalyzerFactory;
 import com.efuture.titan.security.Authorizer;
-import com.efuture.titan.session.BlockingSession;
-import com.efuture.titan.session.Session;
 import com.efuture.titan.session.SessionState;
 import com.efuture.titan.util.StringUtils;
 
@@ -101,21 +100,13 @@ public class Driver implements CommandProcessor {
   }
 
   public int execute() {
-    Session session = ss.getSession();
+    Executor executor = ss.getExecutor();
     if (session == null) {
-      String sessionMode = conf.getVar(ConfVars.TITAN_SERVER_SESSION_MODE).toUpperCase();
-      if (sessionMode.equals("BLOCKING")) {
-        session = new BlockingSession(conf, ss);
-      //} else if (sessionMode.equals("NONBLOCKING")) {
-      //  session = new NonblockingSession();
-      } else {
-        // default blocking
-        session = new BlockingSession(conf, ss);
-      }
-      ss.setSession(session);
+      executor = new Executor(conf, ss);
+      ss.setExecutor(executor);
     }
 
-    session.execute(plan);
+    executor.execute(plan);
     return 0;
   }
 

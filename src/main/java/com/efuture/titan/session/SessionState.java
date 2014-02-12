@@ -13,10 +13,13 @@ import com.efuture.titan.security.Authorizer;
 
 public class SessionState {
 
+  public static final int MYSQL = 1;
+
   private static Map<FrontendConnection, SessionState> sessionMap =
       new ConcurrentHashMap<FrontendConnection, SessionState>();
 
   protected TitanConf conf;
+  protected int type;
   protected FrontendConnection feConn;
 
   public String db;
@@ -34,7 +37,7 @@ public class SessionState {
   private Authenticator authenticator = null;
   private Authorizer authorizer = null;
 
-  private Session session;
+  private Executor executor;
 
   public static SessionState get(FrontendConnection conn) {
     SessionState ss = sessionMap.get(conn);
@@ -77,12 +80,12 @@ public class SessionState {
     return authorizer;
   }
 
-  public void setSession(Session session) {
-    this.session = session;
+  public void setExecutor(Executor executor) {
+    this.executor = executor;
   }
 
-  public Session getSession() {
-    return session;
+  public Executor getExecutor() {
+    return executor;
   }
 
   public void close() {

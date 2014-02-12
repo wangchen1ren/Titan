@@ -112,7 +112,6 @@ public class FieldPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += (catalog == null ? 1 : BufferUtil.getLength(catalog));
     size += (db == null ? 1 : BufferUtil.getLength(db));
     size += (table == null ? 1 : BufferUtil.getLength(table));

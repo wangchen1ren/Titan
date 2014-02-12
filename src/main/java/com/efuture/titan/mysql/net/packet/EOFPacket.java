@@ -61,7 +61,6 @@ public class EOFPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += 1; // fieldCount
     size += 2; // warningCount
     size += 2; // status

@@ -78,7 +78,6 @@ public class RowDataPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
 		for (int i = 0; i < fieldCount; i++) {
 			byte[] v = fieldValues.get(i);
 			size += (v == null || v.length == 0) ? 1 : BufferUtil.getLength(v);

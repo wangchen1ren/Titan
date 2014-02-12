@@ -28,7 +28,7 @@ import com.efuture.titan.util.BufferUtil;
  */
 public class AuthPacket extends MySQLPacket {
   public static final byte[] AUTH_OK = new byte[] { 7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0 };
-  private static final byte[] FILLER = new byte[23];
+  public static final byte[] FILLER = new byte[23];
 
   public long clientFlags;
   public long maxPacketSize;
@@ -115,7 +115,6 @@ public class AuthPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += 4; // clientFlags
     size += 4; // maxPacketSize
     size += 1; // charsetIndex

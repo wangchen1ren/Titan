@@ -22,6 +22,7 @@ public class MySQLSessionState extends SessionState {
 
   public MySQLSessionState(TitanConf conf, MySQLFrontendConnection conn) {
     super(conf, conn);
+    type = SessionState.MYSQL;
   }
 
   @Override

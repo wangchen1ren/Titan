@@ -17,6 +17,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
+import com.efuture.titan.mysql.net.MySQLMessage;
 import com.efuture.titan.util.BufferUtil;
 
 /**
@@ -52,6 +53,9 @@ public class HandshakePacket extends MySQLPacket {
   public int serverStatus;
   public byte[] restOfScrambleBuff;
 
+  public HandshakePacket() {
+  }
+
   public HandshakePacket(byte packetId,
       byte protocolVersion,
       byte[] serverVersion,
@@ -70,6 +74,21 @@ public class HandshakePacket extends MySQLPacket {
     this.serverCharsetIndex = serverCharsetIndex;
     this.serverStatus = serverStatus;
     this.restOfScrambleBuff = restOfScrambleBuff;
+  }
+
+  public void read(byte[] data) {
+    MySQLMessage mm = new MySQLMessage(data);
+    packetLength = mm.readUB3();
+    packetId = mm.read();
+    protocolVersion = mm.read();
+    serverVersion = mm.readBytesWithNull();
+    threadId = mm.readUB4();
+    seed = mm.readBytesWithNull();
+    serverCapabilities = mm.readUB2();
+    serverCharsetIndex = mm.read();
+    serverStatus = mm.readUB2();
+    mm.move(13);
+    restOfScrambleBuff = mm.readBytesWithNull();
   }
 
   @Override
@@ -93,7 +112,6 @@ public class HandshakePacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += 1; // protocolVersion
     size += serverVersion.length; // serverVersion
     size += 4; // threadId

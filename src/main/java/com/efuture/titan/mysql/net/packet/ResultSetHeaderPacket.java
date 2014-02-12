@@ -74,7 +74,6 @@ public class ResultSetHeaderPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += BufferUtil.getLength(fieldCount); // fieldCount
     if (extra > 0) {
       size += BufferUtil.getLength(extra); // extra

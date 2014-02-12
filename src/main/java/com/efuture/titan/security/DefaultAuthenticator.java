@@ -1,10 +1,7 @@
 
-package com.efuture.titan.mysql.security;
+package com.efuture.titan.security;
 
-import com.efuture.titan.security.Authenticator;
-import com.efuture.titan.security.AuthenticationException;
-
-public class MySQLAuthenticator implements Authenticator {
+public class DefaultAuthenticator implements Authenticator {
 
   private String user;
 

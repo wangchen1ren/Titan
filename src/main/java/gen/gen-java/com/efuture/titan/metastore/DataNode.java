@@ -36,7 +36,7 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("DataNode");
 
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField SOURCES_FIELD_DESC = new org.apache.thrift.protocol.TField("sources", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField DATA_SOURCES_FIELD_DESC = new org.apache.thrift.protocol.TField("dataSources", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,12 +45,12 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
   }
 
   public String name; // required
-  public List<DataSource> sources; // required
+  public List<DataSource> dataSources; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
-    SOURCES((short)2, "sources");
+    DATA_SOURCES((short)2, "dataSources");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,8 +67,8 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
       switch(fieldId) {
         case 1: // NAME
           return NAME;
-        case 2: // SOURCES
-          return SOURCES;
+        case 2: // DATA_SOURCES
+          return DATA_SOURCES;
         default:
           return null;
       }
@@ -114,7 +114,7 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.SOURCES, new org.apache.thrift.meta_data.FieldMetaData("sources", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DATA_SOURCES, new org.apache.thrift.meta_data.FieldMetaData("dataSources", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DataSource.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -126,11 +126,11 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
 
   public DataNode(
     String name,
-    List<DataSource> sources)
+    List<DataSource> dataSources)
   {
     this();
     this.name = name;
-    this.sources = sources;
+    this.dataSources = dataSources;
   }
 
   /**
@@ -140,12 +140,12 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
     if (other.isSetName()) {
       this.name = other.name;
     }
-    if (other.isSetSources()) {
-      List<DataSource> __this__sources = new ArrayList<DataSource>(other.sources.size());
-      for (DataSource other_element : other.sources) {
-        __this__sources.add(new DataSource(other_element));
+    if (other.isSetDataSources()) {
+      List<DataSource> __this__dataSources = new ArrayList<DataSource>(other.dataSources.size());
+      for (DataSource other_element : other.dataSources) {
+        __this__dataSources.add(new DataSource(other_element));
       }
-      this.sources = __this__sources;
+      this.dataSources = __this__dataSources;
     }
   }
 
@@ -156,7 +156,7 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
   @Override
   public void clear() {
     this.name = null;
-    this.sources = null;
+    this.dataSources = null;
   }
 
   public String getName() {
@@ -183,42 +183,42 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
     }
   }
 
-  public int getSourcesSize() {
-    return (this.sources == null) ? 0 : this.sources.size();
+  public int getDataSourcesSize() {
+    return (this.dataSources == null) ? 0 : this.dataSources.size();
   }
 
-  public java.util.Iterator<DataSource> getSourcesIterator() {
-    return (this.sources == null) ? null : this.sources.iterator();
+  public java.util.Iterator<DataSource> getDataSourcesIterator() {
+    return (this.dataSources == null) ? null : this.dataSources.iterator();
   }
 
-  public void addToSources(DataSource elem) {
-    if (this.sources == null) {
-      this.sources = new ArrayList<DataSource>();
+  public void addToDataSources(DataSource elem) {
+    if (this.dataSources == null) {
+      this.dataSources = new ArrayList<DataSource>();
     }
-    this.sources.add(elem);
+    this.dataSources.add(elem);
   }
 
-  public List<DataSource> getSources() {
-    return this.sources;
+  public List<DataSource> getDataSources() {
+    return this.dataSources;
   }
 
-  public DataNode setSources(List<DataSource> sources) {
-    this.sources = sources;
+  public DataNode setDataSources(List<DataSource> dataSources) {
+    this.dataSources = dataSources;
     return this;
   }
 
-  public void unsetSources() {
-    this.sources = null;
+  public void unsetDataSources() {
+    this.dataSources = null;
   }
 
-  /** Returns true if field sources is set (has been assigned a value) and false otherwise */
-  public boolean isSetSources() {
-    return this.sources != null;
+  /** Returns true if field dataSources is set (has been assigned a value) and false otherwise */
+  public boolean isSetDataSources() {
+    return this.dataSources != null;
   }
 
-  public void setSourcesIsSet(boolean value) {
+  public void setDataSourcesIsSet(boolean value) {
     if (!value) {
-      this.sources = null;
+      this.dataSources = null;
     }
   }
 
@@ -232,11 +232,11 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
       }
       break;
 
-    case SOURCES:
+    case DATA_SOURCES:
       if (value == null) {
-        unsetSources();
+        unsetDataSources();
       } else {
-        setSources((List<DataSource>)value);
+        setDataSources((List<DataSource>)value);
       }
       break;
 
@@ -248,8 +248,8 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
     case NAME:
       return getName();
 
-    case SOURCES:
-      return getSources();
+    case DATA_SOURCES:
+      return getDataSources();
 
     }
     throw new IllegalStateException();
@@ -264,8 +264,8 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
     switch (field) {
     case NAME:
       return isSetName();
-    case SOURCES:
-      return isSetSources();
+    case DATA_SOURCES:
+      return isSetDataSources();
     }
     throw new IllegalStateException();
   }
@@ -292,12 +292,12 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
         return false;
     }
 
-    boolean this_present_sources = true && this.isSetSources();
-    boolean that_present_sources = true && that.isSetSources();
-    if (this_present_sources || that_present_sources) {
-      if (!(this_present_sources && that_present_sources))
+    boolean this_present_dataSources = true && this.isSetDataSources();
+    boolean that_present_dataSources = true && that.isSetDataSources();
+    if (this_present_dataSources || that_present_dataSources) {
+      if (!(this_present_dataSources && that_present_dataSources))
         return false;
-      if (!this.sources.equals(that.sources))
+      if (!this.dataSources.equals(that.dataSources))
         return false;
     }
 
@@ -327,12 +327,12 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetSources()).compareTo(other.isSetSources());
+    lastComparison = Boolean.valueOf(isSetDataSources()).compareTo(other.isSetDataSources());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSources()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sources, other.sources);
+    if (isSetDataSources()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dataSources, other.dataSources);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -365,11 +365,11 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("sources:");
-    if (this.sources == null) {
+    sb.append("dataSources:");
+    if (this.dataSources == null) {
       sb.append("null");
     } else {
-      sb.append(this.sources);
+      sb.append(this.dataSources);
     }
     first = false;
     sb.append(")");
@@ -423,21 +423,21 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SOURCES
+          case 2: // DATA_SOURCES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                struct.sources = new ArrayList<DataSource>(_list24.size);
-                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
+                struct.dataSources = new ArrayList<DataSource>(_list16.size);
+                for (int _i17 = 0; _i17 < _list16.size; ++_i17)
                 {
-                  DataSource _elem26;
-                  _elem26 = new DataSource();
-                  _elem26.read(iprot);
-                  struct.sources.add(_elem26);
+                  DataSource _elem18;
+                  _elem18 = new DataSource();
+                  _elem18.read(iprot);
+                  struct.dataSources.add(_elem18);
                 }
                 iprot.readListEnd();
               }
-              struct.setSourcesIsSet(true);
+              struct.setDataSourcesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -462,13 +462,13 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
         oprot.writeString(struct.name);
         oprot.writeFieldEnd();
       }
-      if (struct.sources != null) {
-        oprot.writeFieldBegin(SOURCES_FIELD_DESC);
+      if (struct.dataSources != null) {
+        oprot.writeFieldBegin(DATA_SOURCES_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.sources.size()));
-          for (DataSource _iter27 : struct.sources)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.dataSources.size()));
+          for (DataSource _iter19 : struct.dataSources)
           {
-            _iter27.write(oprot);
+            _iter19.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -495,19 +495,19 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
       if (struct.isSetName()) {
         optionals.set(0);
       }
-      if (struct.isSetSources()) {
+      if (struct.isSetDataSources()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
-      if (struct.isSetSources()) {
+      if (struct.isSetDataSources()) {
         {
-          oprot.writeI32(struct.sources.size());
-          for (DataSource _iter28 : struct.sources)
+          oprot.writeI32(struct.dataSources.size());
+          for (DataSource _iter20 : struct.dataSources)
           {
-            _iter28.write(oprot);
+            _iter20.write(oprot);
           }
         }
       }
@@ -523,17 +523,17 @@ public class DataNode implements org.apache.thrift.TBase<DataNode, DataNode._Fie
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list29 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.sources = new ArrayList<DataSource>(_list29.size);
-          for (int _i30 = 0; _i30 < _list29.size; ++_i30)
+          org.apache.thrift.protocol.TList _list21 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.dataSources = new ArrayList<DataSource>(_list21.size);
+          for (int _i22 = 0; _i22 < _list21.size; ++_i22)
           {
-            DataSource _elem31;
-            _elem31 = new DataSource();
-            _elem31.read(iprot);
-            struct.sources.add(_elem31);
+            DataSource _elem23;
+            _elem23 = new DataSource();
+            _elem23.read(iprot);
+            struct.dataSources.add(_elem23);
           }
         }
-        struct.setSourcesIsSet(true);
+        struct.setDataSourcesIsSet(true);
       }
     }
   }

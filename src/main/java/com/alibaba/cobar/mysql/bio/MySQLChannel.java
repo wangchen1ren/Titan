@@ -510,7 +510,7 @@ public final class MySQLChannel implements Channel {
         CommandPacket cmd = new CommandPacket();
         cmd.packetId = 0;
         cmd.command = MySQLPacket.COM_QUERY;
-        cmd.arg = s.toString().getBytes();
+        cmd.arg = s.toStrin().getBytes();
         return cmd;
     }
 

@@ -27,7 +27,7 @@ public class TitanConf extends Configuration {
     // server
     TITAN_SERVER_PORT("titan.server.port", (int)8066),
     TITAN_SERVER_AUTHORIZATION_ENABLED("titan.server.authorization.enabled", false),
-    TITAN_SERVER_SESSION_MODE("titan.server.session.mode", "blocking"),
+    TITAN_SERVER_EXECUTE_MODE("titan.server.execute.mode", "blocking"),
 
     // metastore
     TITAN_METASTORE_PORT("titan.metastore.port", 21112),

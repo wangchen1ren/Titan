@@ -1,5 +1,5 @@
 
-package com.efuture.titan.session;
+package com.efuture.titan.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,14 +8,17 @@ import com.alibaba.cobar.config.ErrorCode;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.exec.QueryPlan;
+import com.efuture.titan.exec.Executor;
 
-public class BlockingSession implements Session {
-  private static final Log LOG = LogFactory.getLog(BlockingSession.class);
+public class Executor implements Executor {
+  private static final Log LOG = LogFactory.getLog(Executor.class);
 
   private TitanConf conf;
   private SessionState ss;
 
-  public BlockingSession(TitanConf conf, SessionState ss) {
+  private NodeWorker worker;
+
+  public Executor(TitanConf conf, SessionState ss) {
     this.conf = conf;
     this.ss = ss;
   }
@@ -33,35 +36,21 @@ public class BlockingSession implements Session {
       return;
     }
 
-    if (plan.isSingleNodeTask()) {
-      executor = new SingleNodeExecutor(conf, ss);
-    } else {
-      executor = new MultiNodeExecutor(conf, ss);
-    }
-    executor.execute(plan);
+    List<DataNodeTask> tasks = plan.getDataNodeTasks();
 
-    /*
-    RouteResultset rrs = plan.getRouteResultSet();
-    // 检查路由结果是否为空
-    RouteResultsetNode[] nodes = rrs.getNodes();
-    if (nodes == null || nodes.length == 0) {
+    if (tasks == null || tasks.size() == 0) {
       ss.getFrontendConnection().writeErrMessage(
           ErrorCode.ER_NO_DB_ERROR, "No dataNode selected");
       return;
     }
 
-    // 选择执行方式
-    if (nodes.length == 1) {
-      singleNodeExecutor.execute(nodes[0], this, rrs.getFlag());
+    if (tasks.size() == 1) {
+      worker = new SingleNodeWorker(conf, ss);
     } else {
-      // 多数据节点，非事务模式下，执行的是可修改数据的SQL，则后端为事务模式。
-      boolean autocommit = source.isAutocommit();
-      if (autocommit && isModifySQL(type)) {
-        autocommit = false;
-      }
-      multiNodeExecutor.execute(nodes, autocommit, this, rrs.getFlag());
+      worker = new SingleNodeWorker(conf, ss);
+      //worker = new MultiNodeWorker(conf, ss);
     }
-    */
+    worker.execute(plan);
   }
 
   @Override
@@ -71,6 +60,7 @@ public class BlockingSession implements Session {
           ErrorCode.ER_YES, "Transaction error, need to rollback.");
       return;
     }
+    worker.commit();
   }
 
   @Override
@@ -78,6 +68,7 @@ public class BlockingSession implements Session {
     if (ss.txInterrupted) {
       ss.txInterrupted = true;
     }
+    worker.rollback();
   }
 
   @Override

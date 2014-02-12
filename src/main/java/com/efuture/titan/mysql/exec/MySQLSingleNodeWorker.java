@@ -1,0 +1,260 @@
+
+package com.efuture.titan.mysql.exec;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.exec.DataNodeTask;
+import com.efuture.titan.exec.SingleNodeWorker;
+import com.efuture.titan.session.SessionState;
+import com.efuture.titan.util.StringUtils;
+
+public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
+  private static final Log LOG = LogFactory.getLog(MySQLSingleNodeWorker.class);
+
+  private static final CommandPacket COMMIT_PACKET;
+  private static final CommandPacket ROLLBACK_PACKET;
+  private static final CommandPacket AUTOCOMMIT_ON_PACKET;
+  private static final CommandPacket AUTOCOMMIT_OFF_PACKET;
+  static {
+    ROLLBACK_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "commit".getBytes());
+    ROLLBACK_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "rollback".getBytes());
+    AUTOCOMMIT_ON_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "SET autocommit=1".getBytes());
+    AUTOCOMMIT_OFF_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "SET autocommit=0".getBytes());
+  }
+
+  private byte packetId;
+
+  public MySQLSingleNodeWorker(TitanConf conf, SessionState ss) {
+    super(conf, ss);
+  }
+
+  /*============================*/
+  /*          Execute           */
+  /*============================*/
+
+  @Override
+  private void _execute(Connection connection, String sql) {
+    try {
+      MySQLBackendConnection conn = (MySQLBackendConnection) connection;
+      sendCommandPacket(conn, getCharsetPacket());
+      if (! conn.getCharset().equals(ss.charset)) {
+        sendCommandPacket(conn, getAutoCommitPacket());
+      }
+      // do not set sql_mode
+      //sendCommandPacket(connection, getSQLModePacket());
+
+      packetId = 0;
+
+      // check frontend connection
+      if (ss.getFrontendConnection().isClosed()) {
+        endRunning();
+        return;
+      }
+
+      BinaryPacket bin = conn.write(getSQLPacket(sql));
+      switch (bin.data[0]) {
+        case OkPacket.FIELD_COUNT: 
+          endRunning();
+          // set lastInsertId
+          setLastInsertId(bin);
+          // return to frontend
+          bin.packetId = ++packetId; // OK_PACKET
+          ss.getFrontendConnection().write(bin.getBytes());
+          break;
+        case ErrorPacket.FIELD_COUNT:
+          handleErrorPacket(conn, sql, bin);
+          break;
+        default: // HEADER|FIELDS|FIELD_EOF|ROWS|LAST_EOF
+          handleResultSet(conn, sql, bin);
+      }
+    } catch (Exception e) {
+      LOG.error("Backend execute error", e);
+      handleError(ErrorCode.ER_YES, StringUtils.stringifyException(e));
+    }
+  }
+
+  private CommandPacket getSQLPacket(String sql) {
+    return new CommandPacket((byte) 0, MySQLPacket.QUERY,
+        StringUtils.encodeString(sql, ss.charset));
+  }
+
+  private CommandPacket getSQLModePacket() {
+    StringBuilder sb = new StringBuilder();
+    //sb.append("SET sql_mode=\"").append().append("\"");
+    return new CommandPacket((byte) 0, MySQLPacket.QUERY,
+        sb.toString().getBytes());
+  }
+
+  private CommandPacket getCharsetPacket() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("SET names ").append(ss.charset);
+    return new CommandPacket((byte) 0, MySQLPacket.QUERY,
+        sb.toString().getBytes());
+  }
+
+  private CommandPacket getAutoCommitPacket() {
+    return isAutoCommit ? AUTOCOMMIT_ON_PACKET : AUTOCOMMIT_OFF_PACKET;
+  }
+
+  private void handleResultSet(MySQLBackendConnection conn,
+      String sql, BinaryPacket bin) throws IOException {
+    List<MySQLPacket> headerList = new LinkedList<MySQLPacket>();
+    bin.packetId = ++packetId;// HEADER
+    headerList.add(bin);
+    while (true) {
+      bin = conn.receive();
+      switch (bin.data[0]) {
+        case ErrorPacket.FIELD_COUNT: 
+          handleErrorPacket(conn, sql, bin);
+          return;
+        case EOFPacket.FIELD_COUNT: 
+          bin.packetId = ++packetId;// FIELD_EOF
+          for (MySQLPacket packet : headerList) {
+            ss.getFrontendConnection().write(packet.getBytes());
+          }   
+          ss.getFrontendConnection().write(bin.getBytes());
+          headerList = null;
+          handleRowData(conn, sql);
+          return;
+        default:
+          bin.packetId = ++packetId;// FIELDS
+          switch (flag) {
+            case RouteResultset.REWRITE_FIELD:
+              StringBuilder fieldName = new StringBuilder();
+              fieldName.append("Tables_in_").append(ss.getSource().getSchema());
+              FieldPacket field = PacketUtil.getField(bin, fieldName.toString());
+              headerList.add(field);
+              break;
+            default:
+              headerList.add(bin);
+          }
+      }
+    }
+  }
+
+  private void handleRowData(MySQLBackendConnection conn, String sql) {
+    while (true) {
+      BinaryPacket bin = mc.receive();
+      switch (bin.data[0]) {
+        case ErrorPacket.FIELD_COUNT:
+          handleErrorPacket(conn, sql, bin);
+          return;
+        case EOFPacket.FIELD_COUNT:
+          endRunning();
+          bin.packetId = ++packetId;// LAST_EOF
+          ss.getFrontendConnection().write(bin.getBytes());
+          return;
+        default:
+          bin.packetId = ++packetId;// ROWS
+          ss.getFrontendConnection().write(bin.getBytes());
+          /*
+          size += bin.packetLength;
+          if (size > RECEIVE_CHUNK_SIZE) {
+            handleNext(rrn, ss, mc, bb, packetId);
+            return;
+          }
+          */
+      }
+    }
+  }
+
+  private void setLastInsertId(BinaryPacket bin) {
+    OkPacket ok = new OkPacket();
+    ok.read(bin.getBytes());
+    if (ok.insertId > 0) {
+      ss.lastInsertId = ok.insertId;
+    }
+  }   
+
+
+  /*============================*/
+  /*          Commit            */
+  /*============================*/
+
+  @Override
+  protected void _commit(Connection connection) {
+    sendCommandPacket(connection, COMMIT_PACKET);
+  }
+
+
+  /*============================*/
+  /*         Rollback           */
+  /*============================*/
+
+  @Override
+  protected void _rollback(Connection connection) {
+    sendCommandPacket(connection, ROLLBACK_PACKET);
+  }
+
+  /*============================*/
+  /*          Common            */
+  /*============================*/
+
+  private void handleError(int errno, String message) {
+    endRunning();
+    ss.txInterrupted = true;
+
+    // notify frontend
+    String msg = StringUtils.encodeString(message, ss.charset);
+    ss.getFrontendConnection().writeErrMessage(++packetId, errno, msg);
+  }
+
+  private void handleErrorPacket(Connection conn, String sql, BinaryPacket bin) {
+    endRunning();
+    logErrorPacket(conn, sql, bin);
+
+    // return to frontend
+    bin.packetId = ++packetId;// ERROR_PACKET
+    ss.getFrontendConnection().write(bin.getBytes());
+  }
+
+  private void logErrorPacket(Connection conn, String sql, BinaryPacket bin) {
+    ErrorPacket err = new ErrorPacket();
+    err.read(bin.getBytes());
+    String msg = null;
+    if (err.message != null) {
+      msg = StringUtils.decodeString(err.message, ss.charset);
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("\n MSG:").append(msg);
+    //s.append("\n ROUTE:").append(source).append(" -> ").append(this);
+    sb.append("\n BackendConnection:").append(conn.toString());
+    sb.append("\n SQL:").append(sql);
+
+    LOG.warn("Execute error: " + sb.toString());
+  }
+
+  private void sendCommandPacket(Connection connection, CommandPacket packet) {
+    String command = StringUtils.decodeString(packet.arg, ss.charset);
+    if (isFail.get() || ss.getFrontendConnection().isClosed()) {
+      handleError(ErrorCode.ER_YES, "other task fails, " + command + " failed channel");
+      return;
+    }
+    try {
+      MySQLBackendConnection conn = (MySQLBackendConnection) connection;
+      BinaryPacket bin = conn.write(packet.getBytes());
+      switch (bin.data[0]) {
+        case OkPacket.FIELD_COUNT:
+          endRunning();
+          // return to frontend
+          ss.getFrontendConnection().write(bin.getBytes());
+          break;          
+        case ErrorPacket.FIELD_COUNT:
+          isFail.set(true);
+          handleErrorPacket(conn, command, bin);
+          break;
+        default:
+          throw new UnknownPacketException(bin.toString());
+      }
+    } catch (Exception e) {
+      handleError(ErrorCode.ER_YES, e.getMessage()); 
+    }
+  }
+
+  private void clear() {
+  }
+
+}

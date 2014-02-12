@@ -2,6 +2,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
+import com.efuture.titan.mysql.net.MySQLMessage;
 import com.efuture.titan.util.BufferUtil;
 
 /**
@@ -31,10 +32,26 @@ public class ErrorPacket extends MySQLPacket {
   public byte[] sqlState = DEFAULT_SQLSTATE;
   public byte[] message;
 
+  public ErrorPacket() {
+  }
+
   public ErrorPacket(byte packetId, int errno, byte[] message) {
     this.packetId = packetId;
     this.errno = errno;
     this.message = message;
+  }
+
+  public void read() {
+    MySQLMessage mm = new MySQLMessage(data);
+    packetLength = mm.readUB3();
+    packetId = mm.read();
+    fieldCount = mm.read();
+    errno = mm.readUB2();
+    if (mm.hasRemaining() && (mm.read(mm.position()) == SQLSTATE_MARKER)) {
+      mm.read();
+      sqlState = mm.readBytes(5);
+    }   
+    message = mm.readBytes();
   }
 
   @Override
@@ -54,7 +71,6 @@ public class ErrorPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += 1; // fieldCount
     size += 2; // errno
     size += 1; // mark

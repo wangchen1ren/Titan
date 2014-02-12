@@ -12,6 +12,8 @@ public class SemanticAnalyzer {
   private TitanConf conf;
   private Meta meta;
 
+  private RoutePlan routePlan;
+
   public SemanticAnalyzer(TitanConf conf) throws TitanException {
     this.conf = conf;
     try {
@@ -21,11 +23,13 @@ public class SemanticAnalyzer {
     }
   }
 
-  public void analyze(SQLStatement statement) {
-    // do nothing
-  }
-
   public Meta getMeta() {
     return meta;
   }
+
+  public void analyze(SQLStatement statement) {
+    // route
+    Router router = new Router(this);
+  }
+
 }

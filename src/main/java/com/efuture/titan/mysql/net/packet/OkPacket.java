@@ -17,6 +17,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
+import com.efuture.titan.mysql.MySQLMessage;
 import com.efuture.titan.util.BufferUtil;
 
 /**
@@ -47,6 +48,9 @@ public class OkPacket extends MySQLPacket {
   public int warningCount;
   public byte[] message;
 
+  public OkPacket() {
+  }
+
   public OkPacket(byte packetId,
       long affectedRows,
       long insertId,
@@ -59,6 +63,20 @@ public class OkPacket extends MySQLPacket {
     this.serverStatus = serverStatus;
     this.warningCount = warningCount;
     this.message = message;
+  }
+
+  public void read(byte[] data) {
+    MySQLMessage mm = new MySQLMessage(data);
+    packetLength = mm.readUB3();
+    packetId = mm.read();
+    fieldCount = mm.read();
+    affectedRows = mm.readLength();
+    insertId = mm.readLength();
+    serverStatus = mm.readUB2();
+    warningCount = mm.readUB2();
+    if (mm.hasRemaining()) {
+      this.message = mm.readBytesWithLength();
+    }
   }
 
   @Override
@@ -81,7 +99,6 @@ public class OkPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += 1; // packetId
     size += 1; // fieldCount
     size += BufferUtil.getLength(affectedRows); // affectedRows
     size += BufferUtil.getLength(insertId); // insertId
