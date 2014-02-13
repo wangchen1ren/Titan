@@ -3,7 +3,7 @@ package com.efuture.titan.mysql.net.packet;
 import java.nio.ByteBuffer;
 
 import com.efuture.titan.mysql.net.MySQLMessage;
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From server to client in response to command, if error.
@@ -41,7 +41,7 @@ public class ErrorPacket extends MySQLPacket {
     this.message = message;
   }
 
-  public void read() {
+  public void read(byte[] data) {
     MySQLMessage mm = new MySQLMessage(data);
     packetLength = mm.readUB3();
     packetId = mm.read();
@@ -58,10 +58,10 @@ public class ErrorPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE);
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE);
     buffer.put(packetId);
     buffer.put(fieldCount);
-    BufferUtil.writeUB2(buffer, errno);
+    BufferUtils.writeUB2(buffer, errno);
     buffer.put(mark);
     buffer.put(sqlState);
     buffer.put(message);

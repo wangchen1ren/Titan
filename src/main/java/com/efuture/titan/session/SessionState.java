@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
+import com.efuture.titan.exec.Executor;
 import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.net.NIOConnection;
 import com.efuture.titan.security.Authenticator;
@@ -90,7 +91,7 @@ public class SessionState {
 
   public void close() {
     // close session
-    session.close();
+    executor.close();
     // remove from map
     SessionState.remove(feConn);
   }

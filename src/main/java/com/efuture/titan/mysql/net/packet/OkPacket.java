@@ -17,8 +17,8 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.mysql.MySQLMessage;
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.mysql.net.MySQLMessage;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From server to client in response to command, if no error and no result set.
@@ -83,15 +83,15 @@ public class OkPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE);
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE);
     buffer.put(packetId);
     buffer.put(fieldCount);
-    BufferUtil.writeLength(buffer, affectedRows);
-    BufferUtil.writeLength(buffer, insertId);
-    BufferUtil.writeUB2(buffer, serverStatus);
-    BufferUtil.writeUB2(buffer, warningCount);
+    BufferUtils.writeLength(buffer, affectedRows);
+    BufferUtils.writeLength(buffer, insertId);
+    BufferUtils.writeUB2(buffer, serverStatus);
+    BufferUtils.writeUB2(buffer, warningCount);
     if (message != null) {
-      BufferUtil.writeWithLength(buffer, message);
+      BufferUtils.writeWithLength(buffer, message);
     }
     return buffer.array();
   }
@@ -100,12 +100,12 @@ public class OkPacket extends MySQLPacket {
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
     size += 1; // fieldCount
-    size += BufferUtil.getLength(affectedRows); // affectedRows
-    size += BufferUtil.getLength(insertId); // insertId
+    size += BufferUtils.getLength(affectedRows); // affectedRows
+    size += BufferUtils.getLength(insertId); // insertId
     size += 2; // serverStatus
     size += 2; // warningCount
     if (message != null) {
-      size += BufferUtil.getLength(message);
+      size += BufferUtils.getLength(message);
     }
     return size;
   }

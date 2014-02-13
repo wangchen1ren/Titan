@@ -1,6 +1,10 @@
 
 package com.efuture.titan.mysql.net.packet;
 
+import java.nio.ByteBuffer;
+
+import com.efuture.titan.util.BufferUtils;
+
 /**
  * From client to server whenever the client wants the server to do something.
  * 
@@ -74,7 +78,7 @@ public class CommandPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size); // header
+    BufferUtils.writeUB3(buffer, size); // header
     buffer.put(packetId);
     buffer.put(command);
     buffer.put(arg);
@@ -90,6 +94,7 @@ public class CommandPacket extends MySQLPacket {
   }
 
   @Override
-  protected String getPacketInfo() {
+  public String getPacketInfo() {
     return "MySQL Command Packet";
-  }   
+  }
+}

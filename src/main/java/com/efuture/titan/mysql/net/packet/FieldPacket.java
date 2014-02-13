@@ -17,7 +17,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From Server To Client, part of Result Set Packets. One for each column in the
@@ -87,24 +87,24 @@ public class FieldPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
     byte nullVal = 0;
-    BufferUtil.writeWithLength(buffer, catalog, nullVal);
-    BufferUtil.writeWithLength(buffer, db, nullVal);
-    BufferUtil.writeWithLength(buffer, table, nullVal);
-    BufferUtil.writeWithLength(buffer, orgTable, nullVal);
-    BufferUtil.writeWithLength(buffer, name, nullVal);
-    BufferUtil.writeWithLength(buffer, orgName, nullVal);
+    BufferUtils.writeWithLength(buffer, catalog, nullVal);
+    BufferUtils.writeWithLength(buffer, db, nullVal);
+    BufferUtils.writeWithLength(buffer, table, nullVal);
+    BufferUtils.writeWithLength(buffer, orgTable, nullVal);
+    BufferUtils.writeWithLength(buffer, name, nullVal);
+    BufferUtils.writeWithLength(buffer, orgName, nullVal);
     buffer.put((byte) 0x0C);
-    BufferUtil.writeUB2(buffer, charsetIndex);
-    BufferUtil.writeUB4(buffer, length);
+    BufferUtils.writeUB2(buffer, charsetIndex);
+    BufferUtils.writeUB4(buffer, length);
     buffer.put((byte) (type & 0xff));
-    BufferUtil.writeUB2(buffer, flags);
+    BufferUtils.writeUB2(buffer, flags);
     buffer.put(decimals);
     buffer.position(buffer.position() + FILLER.length);
     if (definition != null) {
-      BufferUtil.writeWithLength(buffer, definition);
+      BufferUtils.writeWithLength(buffer, definition);
     }
     return buffer.array();
   }
@@ -112,12 +112,12 @@ public class FieldPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += (catalog == null ? 1 : BufferUtil.getLength(catalog));
-    size += (db == null ? 1 : BufferUtil.getLength(db));
-    size += (table == null ? 1 : BufferUtil.getLength(table));
-    size += (orgTable == null ? 1 : BufferUtil.getLength(orgTable));
-    size += (name == null ? 1 : BufferUtil.getLength(name));
-    size += (orgName == null ? 1 : BufferUtil.getLength(orgName));
+    size += (catalog == null ? 1 : BufferUtils.getLength(catalog));
+    size += (db == null ? 1 : BufferUtils.getLength(db));
+    size += (table == null ? 1 : BufferUtils.getLength(table));
+    size += (orgTable == null ? 1 : BufferUtils.getLength(orgTable));
+    size += (name == null ? 1 : BufferUtils.getLength(name));
+    size += (orgName == null ? 1 : BufferUtils.getLength(orgName));
     size += 1; // 0x0C
     size += 2; // charsetIndex
     size += 4; // length
@@ -126,7 +126,7 @@ public class FieldPacket extends MySQLPacket {
     size += 1; // decimals
     size += 2; // FILLER
     if (definition != null) {
-      size += BufferUtil.getLength(definition);
+      size += BufferUtils.getLength(definition);
     }
     return size;
   }

@@ -32,9 +32,9 @@ struct DataSource {
   2: string type,
   3: string host,
   4: i32 port,
-  5: string user,
+  5: string username,
   6: string password,
-  7: string db,
+  7: string database,
   8: string sqlMode,
 }
 

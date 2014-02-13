@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class StreamUtil {
+public class StreamUtils {
   private static final long NULL_LENGTH = -1;
   private static final byte[] EMPTY_BYTES = new byte[0];
 

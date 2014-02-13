@@ -4,7 +4,7 @@ package com.efuture.titan.mysql.net.packet;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 public class Reply323Packet extends MySQLPacket {
 
@@ -20,7 +20,7 @@ public class Reply323Packet extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
     if (seed == null) {
       buffer.put((byte) 0);

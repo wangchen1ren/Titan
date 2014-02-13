@@ -1,16 +1,17 @@
 
 package com.efuture.titan.exec;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.alibaba.cobar.config.ErrorCode;
 
 import com.efuture.titan.common.conf.TitanConf;
-import com.efuture.titan.exec.QueryPlan;
-import com.efuture.titan.exec.Executor;
+import com.efuture.titan.session.SessionState;
 
-public class Executor implements Executor {
+public class Executor {
   private static final Log LOG = LogFactory.getLog(Executor.class);
 
   private TitanConf conf;
@@ -23,12 +24,10 @@ public class Executor implements Executor {
     this.ss = ss;
   }
 
-  @Override
   public SessionState getSessionState() {
     return ss;
   }
 
-  @Override
   public void execute(QueryPlan plan) {
     if (ss.txInterrupted) {
       ss.getFrontendConnection().writeErrMessage(
@@ -44,16 +43,10 @@ public class Executor implements Executor {
       return;
     }
 
-    if (tasks.size() == 1) {
-      worker = new SingleNodeWorker(conf, ss);
-    } else {
-      worker = new SingleNodeWorker(conf, ss);
-      //worker = new MultiNodeWorker(conf, ss);
-    }
+    worker = NodeWorkerFactory.make(conf, ss, tasks.size());
     worker.execute(plan);
   }
 
-  @Override
   public void commit() {
     if (ss.txInterrupted) {
       ss.getFrontendConnection().writeErrMessage(
@@ -63,7 +56,6 @@ public class Executor implements Executor {
     worker.commit();
   }
 
-  @Override
   public void rollback() {
     if (ss.txInterrupted) {
       ss.txInterrupted = true;
@@ -71,15 +63,12 @@ public class Executor implements Executor {
     worker.rollback();
   }
 
-  @Override
   public void cancel() {
   }
 
-  @Override
   public void terminate() {
   }
 
-  @Override
   public void close() {
   }
 

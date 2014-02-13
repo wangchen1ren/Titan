@@ -18,7 +18,7 @@ package com.efuture.titan.util;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CharsetUtil {
+public class CharsetUtils {
     private static final String[] INDEX_TO_CHARSET = new String[99];
     private static final Map<String, Integer> CHARSET_TO_INDEX = new HashMap<String, Integer>();
     static {

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import com.alibaba.cobar.config.Capabilities;
 
 import com.efuture.titan.mysql.net.MySQLMessage;
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From client to server during initial handshake.
@@ -86,28 +86,28 @@ public class AuthPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
-    BufferUtil.writeUB4(buffer, clientFlags);
-    BufferUtil.writeUB4(buffer, maxPacketSize);
+    BufferUtils.writeUB4(buffer, clientFlags);
+    BufferUtils.writeUB4(buffer, maxPacketSize);
     buffer.put((byte) charsetIndex);
     buffer.put(FILLER);
     if (user == null) {
       buffer.put((byte) 0);
     } else {
       byte[] userData = user.getBytes();
-      BufferUtil.writeWithNull(buffer, userData);
+      BufferUtils.writeWithNull(buffer, userData);
     }
     if (password == null) {
       buffer.put((byte) 0);
     } else {
-      BufferUtil.writeWithLength(buffer, password);
+      BufferUtils.writeWithLength(buffer, password);
     }
     if (database == null) {
       buffer.put((byte) 0);
     } else {
       byte[] databaseData = database.getBytes();
-      BufferUtil.writeWithNull(buffer, databaseData);
+      BufferUtils.writeWithNull(buffer, databaseData);
     }
     return buffer.array();
   }
@@ -120,7 +120,7 @@ public class AuthPacket extends MySQLPacket {
     size += 1; // charsetIndex
     size += 23; // FILLER
     size += (user == null) ? 1 : user.length() + 1; // user
-    size += (password == null) ? 1 : BufferUtil.getLength(password); // password
+    size += (password == null) ? 1 : BufferUtils.getLength(password); // password
     size += (database == null) ? 1 : database.length() + 1; // database
     return size;
   }

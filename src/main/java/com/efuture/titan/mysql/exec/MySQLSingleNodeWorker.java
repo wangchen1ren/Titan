@@ -1,16 +1,33 @@
 
 package com.efuture.titan.mysql.exec;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.alibaba.cobar.config.ErrorCode;
 
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.exec.DataNodeTask;
 import com.efuture.titan.exec.SingleNodeWorker;
+import com.efuture.titan.mysql.net.MySQLBackendConnection;
+import com.efuture.titan.mysql.net.packet.BinaryPacket;
+import com.efuture.titan.mysql.net.packet.ErrorPacket;
+import com.efuture.titan.mysql.net.packet.EOFPacket;
+import com.efuture.titan.mysql.net.packet.CommandPacket;
+import com.efuture.titan.mysql.net.packet.OkPacket;
+import com.efuture.titan.mysql.net.packet.MySQLPacket;
+import com.efuture.titan.mysql.net.packet.RowDataPacket;
+import com.efuture.titan.mysql.net.packet.QuitPacket;
+import com.efuture.titan.mysql.net.UnknownPacketException;
+import com.efuture.titan.net.bio.Connection;
 import com.efuture.titan.session.SessionState;
 import com.efuture.titan.util.StringUtils;
 
-public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
+public class MySQLSingleNodeWorker extends SingleNodeWorker {
   private static final Log LOG = LogFactory.getLog(MySQLSingleNodeWorker.class);
 
   private static final CommandPacket COMMIT_PACKET;
@@ -18,10 +35,10 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
   private static final CommandPacket AUTOCOMMIT_ON_PACKET;
   private static final CommandPacket AUTOCOMMIT_OFF_PACKET;
   static {
-    ROLLBACK_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "commit".getBytes());
-    ROLLBACK_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "rollback".getBytes());
-    AUTOCOMMIT_ON_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "SET autocommit=1".getBytes());
-    AUTOCOMMIT_OFF_PACKET = new CommandPacket((byte) 0, MySQLPacket.QUERY, "SET autocommit=0".getBytes());
+    COMMIT_PACKET = new CommandPacket((byte) 0, MySQLPacket.COM_QUERY, "commit".getBytes());
+    ROLLBACK_PACKET = new CommandPacket((byte) 0, MySQLPacket.COM_QUERY, "rollback".getBytes());
+    AUTOCOMMIT_ON_PACKET = new CommandPacket((byte) 0, MySQLPacket.COM_QUERY, "SET autocommit=1".getBytes());
+    AUTOCOMMIT_OFF_PACKET = new CommandPacket((byte) 0, MySQLPacket.COM_QUERY, "SET autocommit=0".getBytes());
   }
 
   private byte packetId;
@@ -35,7 +52,7 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
   /*============================*/
 
   @Override
-  private void _execute(Connection connection, String sql) {
+  protected void _execute(Connection connection, String sql) {
     try {
       MySQLBackendConnection conn = (MySQLBackendConnection) connection;
       sendCommandPacket(conn, getCharsetPacket());
@@ -53,7 +70,7 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
         return;
       }
 
-      BinaryPacket bin = conn.write(getSQLPacket(sql));
+      BinaryPacket bin = conn.write(getSQLPacket(sql).getBytes());
       switch (bin.data[0]) {
         case OkPacket.FIELD_COUNT: 
           endRunning();
@@ -76,21 +93,21 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
   }
 
   private CommandPacket getSQLPacket(String sql) {
-    return new CommandPacket((byte) 0, MySQLPacket.QUERY,
+    return new CommandPacket((byte) 0, MySQLPacket.COM_QUERY,
         StringUtils.encodeString(sql, ss.charset));
   }
 
   private CommandPacket getSQLModePacket() {
     StringBuilder sb = new StringBuilder();
     //sb.append("SET sql_mode=\"").append().append("\"");
-    return new CommandPacket((byte) 0, MySQLPacket.QUERY,
+    return new CommandPacket((byte) 0, MySQLPacket.COM_QUERY,
         sb.toString().getBytes());
   }
 
   private CommandPacket getCharsetPacket() {
     StringBuilder sb = new StringBuilder();
     sb.append("SET names ").append(ss.charset);
-    return new CommandPacket((byte) 0, MySQLPacket.QUERY,
+    return new CommandPacket((byte) 0, MySQLPacket.COM_QUERY,
         sb.toString().getBytes());
   }
 
@@ -120,6 +137,7 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
           return;
         default:
           bin.packetId = ++packetId;// FIELDS
+          /*
           switch (flag) {
             case RouteResultset.REWRITE_FIELD:
               StringBuilder fieldName = new StringBuilder();
@@ -130,13 +148,14 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
             default:
               headerList.add(bin);
           }
+          */
       }
     }
   }
 
-  private void handleRowData(MySQLBackendConnection conn, String sql) {
+  private void handleRowData(MySQLBackendConnection conn, String sql) throws IOException {
     while (true) {
-      BinaryPacket bin = mc.receive();
+      BinaryPacket bin = conn.receive();
       switch (bin.data[0]) {
         case ErrorPacket.FIELD_COUNT:
           handleErrorPacket(conn, sql, bin);
@@ -197,7 +216,7 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
     ss.txInterrupted = true;
 
     // notify frontend
-    String msg = StringUtils.encodeString(message, ss.charset);
+    String msg = new String(StringUtils.encodeString(message, ss.charset));
     ss.getFrontendConnection().writeErrMessage(++packetId, errno, msg);
   }
 
@@ -228,8 +247,11 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
   }
 
   private void sendCommandPacket(Connection connection, CommandPacket packet) {
+    if (connection == null) {
+      ss.getFrontendConnection().write(OkPacket.OK);
+    }
     String command = StringUtils.decodeString(packet.arg, ss.charset);
-    if (isFail.get() || ss.getFrontendConnection().isClosed()) {
+    if (isFailed.get() || ss.getFrontendConnection().isClosed()) {
       handleError(ErrorCode.ER_YES, "other task fails, " + command + " failed channel");
       return;
     }
@@ -243,7 +265,7 @@ public class MySQLSingleNodeWorker extends MySQLSingleNodeWorker {
           ss.getFrontendConnection().write(bin.getBytes());
           break;          
         case ErrorPacket.FIELD_COUNT:
-          isFail.set(true);
+          isFailed.set(true);
           handleErrorPacket(conn, command, bin);
           break;
         default:

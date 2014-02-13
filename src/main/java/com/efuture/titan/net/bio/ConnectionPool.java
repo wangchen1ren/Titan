@@ -11,7 +11,7 @@ public class ConnectionPool {
     return null;
   }
 
-  public static Connection get(SessionState ss,
+  public static Connection getConnection(SessionState ss,
       DataNode node, int replicaIndex) {
     return null;
   }

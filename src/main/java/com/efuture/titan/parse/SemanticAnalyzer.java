@@ -6,6 +6,8 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.TitanException;
 import com.efuture.titan.metadata.Meta;
+import com.efuture.titan.parse.route.RoutePlan;
+import com.efuture.titan.parse.route.Router;
 
 public class SemanticAnalyzer {
 
@@ -29,7 +31,7 @@ public class SemanticAnalyzer {
 
   public void analyze(SQLStatement statement) {
     // route
-    Router router = new Router(this);
+    //Router router = new Router(this);
   }
 
 }

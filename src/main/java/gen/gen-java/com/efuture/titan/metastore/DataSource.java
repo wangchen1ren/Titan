@@ -39,9 +39,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField HOST_FIELD_DESC = new org.apache.thrift.protocol.TField("host", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)4);
-  private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField USERNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("username", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField PASSWORD_FIELD_DESC = new org.apache.thrift.protocol.TField("password", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField DATABASE_FIELD_DESC = new org.apache.thrift.protocol.TField("database", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField SQL_MODE_FIELD_DESC = new org.apache.thrift.protocol.TField("sqlMode", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -54,9 +54,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
   public String type; // required
   public String host; // required
   public int port; // required
-  public String user; // required
+  public String username; // required
   public String password; // required
-  public String db; // required
+  public String database; // required
   public String sqlMode; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -65,9 +65,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     TYPE((short)2, "type"),
     HOST((short)3, "host"),
     PORT((short)4, "port"),
-    USER((short)5, "user"),
+    USERNAME((short)5, "username"),
     PASSWORD((short)6, "password"),
-    DB((short)7, "db"),
+    DATABASE((short)7, "database"),
     SQL_MODE((short)8, "sqlMode");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -91,12 +91,12 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
           return HOST;
         case 4: // PORT
           return PORT;
-        case 5: // USER
-          return USER;
+        case 5: // USERNAME
+          return USERNAME;
         case 6: // PASSWORD
           return PASSWORD;
-        case 7: // DB
-          return DB;
+        case 7: // DATABASE
+          return DATABASE;
         case 8: // SQL_MODE
           return SQL_MODE;
         default:
@@ -152,11 +152,11 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PORT, new org.apache.thrift.meta_data.FieldMetaData("port", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.USER, new org.apache.thrift.meta_data.FieldMetaData("user", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.USERNAME, new org.apache.thrift.meta_data.FieldMetaData("username", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PASSWORD, new org.apache.thrift.meta_data.FieldMetaData("password", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DATABASE, new org.apache.thrift.meta_data.FieldMetaData("database", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SQL_MODE, new org.apache.thrift.meta_data.FieldMetaData("sqlMode", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -172,9 +172,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     String type,
     String host,
     int port,
-    String user,
+    String username,
     String password,
-    String db,
+    String database,
     String sqlMode)
   {
     this();
@@ -183,9 +183,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     this.host = host;
     this.port = port;
     setPortIsSet(true);
-    this.user = user;
+    this.username = username;
     this.password = password;
-    this.db = db;
+    this.database = database;
     this.sqlMode = sqlMode;
   }
 
@@ -204,14 +204,14 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       this.host = other.host;
     }
     this.port = other.port;
-    if (other.isSetUser()) {
-      this.user = other.user;
+    if (other.isSetUsername()) {
+      this.username = other.username;
     }
     if (other.isSetPassword()) {
       this.password = other.password;
     }
-    if (other.isSetDb()) {
-      this.db = other.db;
+    if (other.isSetDatabase()) {
+      this.database = other.database;
     }
     if (other.isSetSqlMode()) {
       this.sqlMode = other.sqlMode;
@@ -229,9 +229,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     this.host = null;
     setPortIsSet(false);
     this.port = 0;
-    this.user = null;
+    this.username = null;
     this.password = null;
-    this.db = null;
+    this.database = null;
     this.sqlMode = null;
   }
 
@@ -330,27 +330,27 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __PORT_ISSET_ID, value);
   }
 
-  public String getUser() {
-    return this.user;
+  public String getUsername() {
+    return this.username;
   }
 
-  public DataSource setUser(String user) {
-    this.user = user;
+  public DataSource setUsername(String username) {
+    this.username = username;
     return this;
   }
 
-  public void unsetUser() {
-    this.user = null;
+  public void unsetUsername() {
+    this.username = null;
   }
 
-  /** Returns true if field user is set (has been assigned a value) and false otherwise */
-  public boolean isSetUser() {
-    return this.user != null;
+  /** Returns true if field username is set (has been assigned a value) and false otherwise */
+  public boolean isSetUsername() {
+    return this.username != null;
   }
 
-  public void setUserIsSet(boolean value) {
+  public void setUsernameIsSet(boolean value) {
     if (!value) {
-      this.user = null;
+      this.username = null;
     }
   }
 
@@ -378,27 +378,27 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     }
   }
 
-  public String getDb() {
-    return this.db;
+  public String getDatabase() {
+    return this.database;
   }
 
-  public DataSource setDb(String db) {
-    this.db = db;
+  public DataSource setDatabase(String database) {
+    this.database = database;
     return this;
   }
 
-  public void unsetDb() {
-    this.db = null;
+  public void unsetDatabase() {
+    this.database = null;
   }
 
-  /** Returns true if field db is set (has been assigned a value) and false otherwise */
-  public boolean isSetDb() {
-    return this.db != null;
+  /** Returns true if field database is set (has been assigned a value) and false otherwise */
+  public boolean isSetDatabase() {
+    return this.database != null;
   }
 
-  public void setDbIsSet(boolean value) {
+  public void setDatabaseIsSet(boolean value) {
     if (!value) {
-      this.db = null;
+      this.database = null;
     }
   }
 
@@ -460,11 +460,11 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       }
       break;
 
-    case USER:
+    case USERNAME:
       if (value == null) {
-        unsetUser();
+        unsetUsername();
       } else {
-        setUser((String)value);
+        setUsername((String)value);
       }
       break;
 
@@ -476,11 +476,11 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       }
       break;
 
-    case DB:
+    case DATABASE:
       if (value == null) {
-        unsetDb();
+        unsetDatabase();
       } else {
-        setDb((String)value);
+        setDatabase((String)value);
       }
       break;
 
@@ -509,14 +509,14 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     case PORT:
       return Integer.valueOf(getPort());
 
-    case USER:
-      return getUser();
+    case USERNAME:
+      return getUsername();
 
     case PASSWORD:
       return getPassword();
 
-    case DB:
-      return getDb();
+    case DATABASE:
+      return getDatabase();
 
     case SQL_MODE:
       return getSqlMode();
@@ -540,12 +540,12 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       return isSetHost();
     case PORT:
       return isSetPort();
-    case USER:
-      return isSetUser();
+    case USERNAME:
+      return isSetUsername();
     case PASSWORD:
       return isSetPassword();
-    case DB:
-      return isSetDb();
+    case DATABASE:
+      return isSetDatabase();
     case SQL_MODE:
       return isSetSqlMode();
     }
@@ -601,12 +601,12 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         return false;
     }
 
-    boolean this_present_user = true && this.isSetUser();
-    boolean that_present_user = true && that.isSetUser();
-    if (this_present_user || that_present_user) {
-      if (!(this_present_user && that_present_user))
+    boolean this_present_username = true && this.isSetUsername();
+    boolean that_present_username = true && that.isSetUsername();
+    if (this_present_username || that_present_username) {
+      if (!(this_present_username && that_present_username))
         return false;
-      if (!this.user.equals(that.user))
+      if (!this.username.equals(that.username))
         return false;
     }
 
@@ -619,12 +619,12 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         return false;
     }
 
-    boolean this_present_db = true && this.isSetDb();
-    boolean that_present_db = true && that.isSetDb();
-    if (this_present_db || that_present_db) {
-      if (!(this_present_db && that_present_db))
+    boolean this_present_database = true && this.isSetDatabase();
+    boolean that_present_database = true && that.isSetDatabase();
+    if (this_present_database || that_present_database) {
+      if (!(this_present_database && that_present_database))
         return false;
-      if (!this.db.equals(that.db))
+      if (!this.database.equals(that.database))
         return false;
     }
 
@@ -693,12 +693,12 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetUser()).compareTo(other.isSetUser());
+    lastComparison = Boolean.valueOf(isSetUsername()).compareTo(other.isSetUsername());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetUser()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.user, other.user);
+    if (isSetUsername()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.username, other.username);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -713,12 +713,12 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetDb()).compareTo(other.isSetDb());
+    lastComparison = Boolean.valueOf(isSetDatabase()).compareTo(other.isSetDatabase());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetDb()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, other.db);
+    if (isSetDatabase()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.database, other.database);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -781,11 +781,11 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     sb.append(this.port);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("user:");
-    if (this.user == null) {
+    sb.append("username:");
+    if (this.username == null) {
       sb.append("null");
     } else {
-      sb.append(this.user);
+      sb.append(this.username);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -797,11 +797,11 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("db:");
-    if (this.db == null) {
+    sb.append("database:");
+    if (this.database == null) {
       sb.append("null");
     } else {
-      sb.append(this.db);
+      sb.append(this.database);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -889,10 +889,10 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // USER
+          case 5: // USERNAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.user = iprot.readString();
-              struct.setUserIsSet(true);
+              struct.username = iprot.readString();
+              struct.setUsernameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -905,10 +905,10 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // DB
+          case 7: // DATABASE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.db = iprot.readString();
-              struct.setDbIsSet(true);
+              struct.database = iprot.readString();
+              struct.setDatabaseIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -954,9 +954,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       oprot.writeFieldBegin(PORT_FIELD_DESC);
       oprot.writeI32(struct.port);
       oprot.writeFieldEnd();
-      if (struct.user != null) {
-        oprot.writeFieldBegin(USER_FIELD_DESC);
-        oprot.writeString(struct.user);
+      if (struct.username != null) {
+        oprot.writeFieldBegin(USERNAME_FIELD_DESC);
+        oprot.writeString(struct.username);
         oprot.writeFieldEnd();
       }
       if (struct.password != null) {
@@ -964,9 +964,9 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         oprot.writeString(struct.password);
         oprot.writeFieldEnd();
       }
-      if (struct.db != null) {
-        oprot.writeFieldBegin(DB_FIELD_DESC);
-        oprot.writeString(struct.db);
+      if (struct.database != null) {
+        oprot.writeFieldBegin(DATABASE_FIELD_DESC);
+        oprot.writeString(struct.database);
         oprot.writeFieldEnd();
       }
       if (struct.sqlMode != null) {
@@ -1004,13 +1004,13 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       if (struct.isSetPort()) {
         optionals.set(3);
       }
-      if (struct.isSetUser()) {
+      if (struct.isSetUsername()) {
         optionals.set(4);
       }
       if (struct.isSetPassword()) {
         optionals.set(5);
       }
-      if (struct.isSetDb()) {
+      if (struct.isSetDatabase()) {
         optionals.set(6);
       }
       if (struct.isSetSqlMode()) {
@@ -1029,14 +1029,14 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
       if (struct.isSetPort()) {
         oprot.writeI32(struct.port);
       }
-      if (struct.isSetUser()) {
-        oprot.writeString(struct.user);
+      if (struct.isSetUsername()) {
+        oprot.writeString(struct.username);
       }
       if (struct.isSetPassword()) {
         oprot.writeString(struct.password);
       }
-      if (struct.isSetDb()) {
-        oprot.writeString(struct.db);
+      if (struct.isSetDatabase()) {
+        oprot.writeString(struct.database);
       }
       if (struct.isSetSqlMode()) {
         oprot.writeString(struct.sqlMode);
@@ -1064,16 +1064,16 @@ public class DataSource implements org.apache.thrift.TBase<DataSource, DataSourc
         struct.setPortIsSet(true);
       }
       if (incoming.get(4)) {
-        struct.user = iprot.readString();
-        struct.setUserIsSet(true);
+        struct.username = iprot.readString();
+        struct.setUsernameIsSet(true);
       }
       if (incoming.get(5)) {
         struct.password = iprot.readString();
         struct.setPasswordIsSet(true);
       }
       if (incoming.get(6)) {
-        struct.db = iprot.readString();
-        struct.setDbIsSet(true);
+        struct.database = iprot.readString();
+        struct.setDatabaseIsSet(true);
       }
       if (incoming.get(7)) {
         struct.sqlMode = iprot.readString();

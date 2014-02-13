@@ -1,7 +1,13 @@
 
 package com.efuture.titan.exec;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.efuture.titan.common.conf.TitanConf;
+import com.efuture.titan.net.bio.Connection;
+import com.efuture.titan.net.bio.ConnectionPool;
 import com.efuture.titan.session.SessionState;
 
 public abstract class SingleNodeWorker implements NodeWorker {
@@ -11,10 +17,10 @@ public abstract class SingleNodeWorker implements NodeWorker {
   protected QueryPlan plan;
   protected boolean isAutoCommit;
 
-  private AtomicBoolean isRunning = new AtomicBoolean(false);
-  private AtomicBoolean isFailed = new AtomicBoolean(false);
-  private final ReentrantLock lock = new ReentrantLock();
-  private final Condition taskFinished = lock.newCondition();
+  protected AtomicBoolean isRunning = new AtomicBoolean(false);
+  protected AtomicBoolean isFailed = new AtomicBoolean(false);
+  protected final ReentrantLock lock = new ReentrantLock();
+  protected final Condition taskFinished = lock.newCondition();
 
   public SingleNodeWorker(TitanConf conf, SessionState ss) {
     this.conf = conf;
@@ -44,7 +50,7 @@ public abstract class SingleNodeWorker implements NodeWorker {
     final Connection conn = ConnectionPool.newConnection(ss,
         task.getDataNode(), task.getReplicaIndex());
     final String sql = task.getSQL();
-    ExecuteThreadPool.get().execute(new Runnable() {
+    ExecuteThreadPool.get(conf).execute(new Runnable() {
       @Override
       public void run() {
         _execute(conn, sql);
@@ -53,23 +59,20 @@ public abstract class SingleNodeWorker implements NodeWorker {
 
   }
 
-  abstract public void _execute(Connection conn, String sql);
+  abstract protected void _execute(Connection conn, String sql);
 
   @Override
   public void commit() {
     DataNodeTask task = plan.getDataNodeTasks().get(0);
-    final Connection conn = ConnectionPool.get(ss,
+    final Connection conn = ConnectionPool.getConnection(ss,
         task.getDataNode(), task.getReplicaIndex());
-    if (conn == null) {
-      ss.getFrontendConnection().write(OkPacket.OK);
-    }
 
     // 初始化
     final ReentrantLock lock = this.lock;
     lock.lock();
     try {
       isRunning.set(true);
-      isFail.set(false);
+      isFailed.set(false);
     } finally {
       lock.unlock();
     }
@@ -79,7 +82,7 @@ public abstract class SingleNodeWorker implements NodeWorker {
       return;
     }
 
-    ExecuteThreadPool.get().execute(new Runnable() {
+    ExecuteThreadPool.get(conf).execute(new Runnable() {
       @Override
       public void run() {
         _commit(conn);
@@ -88,22 +91,20 @@ public abstract class SingleNodeWorker implements NodeWorker {
 
   }
 
+  abstract protected void _commit(Connection conn);
+
   @Override
   public void rollback() {
     DataNodeTask task = plan.getDataNodeTasks().get(0);
-    final Connection conn = ConnectionPool.get(ss,
+    final Connection conn = ConnectionPool.getConnection(ss,
         task.getDataNode(), task.getReplicaIndex());
-    if (conn == null) {
-      ss.getFrontendConnection().write(OkPacket.OK);
-      return;
-    }
 
     // 初始化
     final ReentrantLock lock = this.lock;
     lock.lock();
     try {
       isRunning.set(true);
-      isFail.set(false);
+      isFailed.set(false);
     } finally {
       lock.unlock();
     }
@@ -113,7 +114,7 @@ public abstract class SingleNodeWorker implements NodeWorker {
       return;
     }
 
-    ExecuteThreadPool.get().execute(new Runnable() {
+    ExecuteThreadPool.get(conf).execute(new Runnable() {
       @Override
       public void run() {
         _rollback(conn);

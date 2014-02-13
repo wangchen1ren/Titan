@@ -3,7 +3,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.io.UnsupportedEncodingException;
 
-import com.efuture.titan.util.CharsetUtil;
+import com.efuture.titan.util.CharsetUtils;
 import com.efuture.titan.util.StringUtils;
 
 public class PacketUtils {
@@ -13,7 +13,7 @@ public class PacketUtils {
       String name, int type) {
     FieldPacket packet = new FieldPacket(packetId,
         StringUtils.encodeString(name, CODE_PAGE_1252),
-        CharsetUtil.getIndex(CODE_PAGE_1252),
+        CharsetUtils.getIndex(CODE_PAGE_1252),
         (byte) type
         );
     return packet;
@@ -24,7 +24,7 @@ public class PacketUtils {
     FieldPacket packet = new FieldPacket(packetId,
         StringUtils.encodeString(name, CODE_PAGE_1252),
         StringUtils.encodeString(orgName, CODE_PAGE_1252),
-        CharsetUtil.getIndex(CODE_PAGE_1252),
+        CharsetUtils.getIndex(CODE_PAGE_1252),
         (byte) type
         );
     return packet;

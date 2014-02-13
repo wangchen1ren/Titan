@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From server to client. One packet for each row in the result set.
@@ -62,14 +62,14 @@ public class RowDataPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
 		for (int i = 0; i < fieldCount; i++) {
 			byte[] v = fieldValues.get(i);
 			if (v == null || v.length == 0) {
 				buffer.put(RowDataPacket.NULL_MARK);
 			} else {
-				BufferUtil.writeLength(buffer, v.length);
+				BufferUtils.writeLength(buffer, v.length);
 			}
 		}
     return buffer.array();
@@ -80,7 +80,7 @@ public class RowDataPacket extends MySQLPacket {
     int size = PACKET_HEADER_SIZE;
 		for (int i = 0; i < fieldCount; i++) {
 			byte[] v = fieldValues.get(i);
-			size += (v == null || v.length == 0) ? 1 : BufferUtil.getLength(v);
+			size += (v == null || v.length == 0) ? 1 : BufferUtils.getLength(v);
 		}
 		return size;
   }

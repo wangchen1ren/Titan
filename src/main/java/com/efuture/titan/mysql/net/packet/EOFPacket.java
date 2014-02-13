@@ -17,7 +17,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From Server To Client, at the end of a series of Field Packets, and at the
@@ -50,11 +50,11 @@ public class EOFPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
     buffer.put(fieldCount);
-    BufferUtil.writeUB2(buffer, warningCount);
-    BufferUtil.writeUB2(buffer, status);
+    BufferUtils.writeUB2(buffer, warningCount);
+    BufferUtils.writeUB2(buffer, status);
     return buffer.array();
   }
 

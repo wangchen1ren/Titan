@@ -3,7 +3,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 public class BinaryPacket extends MySQLPacket {
   public static final byte OK = 1;
@@ -26,7 +26,7 @@ public class BinaryPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE);
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE);
     buffer.put(packetId);
     buffer.put(data);
     return buffer.array();

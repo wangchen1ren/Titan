@@ -17,7 +17,7 @@ package com.efuture.titan.util;
 
 import java.nio.ByteBuffer;
 
-public class BufferUtil {
+public class BufferUtils {
 
   public static final void writeUB2(ByteBuffer buffer, int i) {
     buffer.put((byte) (i & 0xff));

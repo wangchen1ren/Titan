@@ -15,7 +15,6 @@ import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.efuture.titan.common.TitanException;
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
-import com.efuture.titan.exec.blocking.BlockingExecutor;
 import com.efuture.titan.net.FrontendConnection;
 import com.efuture.titan.parse.SemanticAnalyzer;
 import com.efuture.titan.parse.SemanticAnalyzerFactory;
@@ -101,7 +100,7 @@ public class Driver implements CommandProcessor {
 
   public int execute() {
     Executor executor = ss.getExecutor();
-    if (session == null) {
+    if (executor == null) {
       executor = new Executor(conf, ss);
       ss.setExecutor(executor);
     }

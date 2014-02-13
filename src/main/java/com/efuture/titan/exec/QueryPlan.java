@@ -1,6 +1,8 @@
 
 package com.efuture.titan.exec;
 
+import java.util.List;
+
 import com.efuture.titan.common.conf.TitanConf;
 import com.efuture.titan.common.conf.TitanConf.ConfVars;
 import com.efuture.titan.parse.SemanticAnalyzer;
@@ -23,7 +25,7 @@ public class QueryPlan {
   }
 
   public boolean isSingleNodeTask() {
-    return tasks.size() == 1;
+    return dataNodeTasks.size() == 1;
   }
 
   public List<DataNodeTask> getDataNodeTasks() {

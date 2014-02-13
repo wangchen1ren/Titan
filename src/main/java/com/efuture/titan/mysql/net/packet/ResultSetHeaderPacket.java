@@ -17,7 +17,7 @@ package com.efuture.titan.mysql.net.packet;
 
 import java.nio.ByteBuffer;
 
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From server to client after command, if no error and result set -- that is,
@@ -62,11 +62,11 @@ public class ResultSetHeaderPacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
-    BufferUtil.writeLength(buffer, fieldCount);
+    BufferUtils.writeLength(buffer, fieldCount);
     if (extra > 0) {
-      BufferUtil.writeLength(buffer, extra);
+      BufferUtils.writeLength(buffer, extra);
     }
     return buffer.array();
   }
@@ -74,9 +74,9 @@ public class ResultSetHeaderPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += BufferUtil.getLength(fieldCount); // fieldCount
+    size += BufferUtils.getLength(fieldCount); // fieldCount
     if (extra > 0) {
-      size += BufferUtil.getLength(extra); // extra
+      size += BufferUtils.getLength(extra); // extra
     }
     return size;
   }

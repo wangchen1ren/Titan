@@ -1,5 +1,5 @@
 
-package com.efuture.titan.route;
+package com.efuture.titan.parse.route;
 
 import com.alibaba.cobar.config.model.SchemaConfig;
 import com.alibaba.cobar.route.RouteResultset;

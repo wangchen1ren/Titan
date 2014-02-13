@@ -18,7 +18,7 @@ package com.efuture.titan.mysql.net.packet;
 import java.nio.ByteBuffer;
 
 import com.efuture.titan.mysql.net.MySQLMessage;
-import com.efuture.titan.util.BufferUtil;
+import com.efuture.titan.util.BufferUtils;
 
 /**
  * From server to client during initial handshake.
@@ -95,17 +95,17 @@ public class HandshakePacket extends MySQLPacket {
   public byte[] getBytes() {
     int size = getPacketSize();
     ByteBuffer buffer = ByteBuffer.allocate(size);
-    BufferUtil.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
+    BufferUtils.writeUB3(buffer, size - PACKET_HEADER_SIZE); // header
     buffer.put(packetId);
     buffer.put(protocolVersion);
-    BufferUtil.writeWithNull(buffer, serverVersion);
-    BufferUtil.writeUB4(buffer, threadId);
-    BufferUtil.writeWithNull(buffer, seed);
-    BufferUtil.writeUB2(buffer, serverCapabilities);
+    BufferUtils.writeWithNull(buffer, serverVersion);
+    BufferUtils.writeUB4(buffer, threadId);
+    BufferUtils.writeWithNull(buffer, seed);
+    BufferUtils.writeUB2(buffer, serverCapabilities);
     buffer.put(serverCharsetIndex);
-    BufferUtil.writeUB2(buffer, serverStatus);
+    BufferUtils.writeUB2(buffer, serverStatus);
     buffer.put(FILLER_13);
-    BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
+    BufferUtils.writeWithNull(buffer, restOfScrambleBuff);
     return buffer.array();
   }
 

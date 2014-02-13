@@ -1,7 +1,10 @@
 
 package com.efuture.titan.exec;
 
+import com.efuture.titan.metastore.DataNode;
+
 public class DataNodeTask {
+  public static final int DEFAULT_REPLICA_INDEX = -1;
 
   private DataNode dataNode;
   private String sql;
@@ -40,7 +43,7 @@ public class DataNodeTask {
     this.replicaIndex = replicaIndex;
   }
 
-  public void getReplicaIndex() {
+  public int getReplicaIndex() {
     return replicaIndex;
   }
 
