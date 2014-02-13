@@ -29,13 +29,9 @@ struct TableRule {
 
 struct DataSource {
   1: string name,
-  2: string type,
-  3: string host,
-  4: i32 port,
-  5: string username,
-  6: string password,
-  7: string database,
-  8: string sqlMode,
+  2: string url,
+  3: string username,
+  4: string password,
 }
 
 struct DataNode {

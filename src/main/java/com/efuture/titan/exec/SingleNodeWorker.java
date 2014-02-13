@@ -1,12 +1,13 @@
 
 package com.efuture.titan.exec;
 
+import java.sql.Connection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.efuture.titan.common.conf.TitanConf;
-import com.efuture.titan.net.bio.Connection;
+//import com.efuture.titan.net.bio.Connection;
 import com.efuture.titan.net.bio.ConnectionPool;
 import com.efuture.titan.session.SessionState;
 

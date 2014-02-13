@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 com.efuture.
+ * Copyright 1999-2012 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,24 +39,11 @@ import com.efuture.titan.util.BufferUtils;
  * 
  * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Result_Set_Header_Packet
  * </pre>
- * 
  */
 public class ResultSetHeaderPacket extends MySQLPacket {
 
   public int fieldCount;
   public long extra;
-
-  public ResultSetHeaderPacket(byte packetId,
-      int fieldCount) {
-    this(packetId, fieldCount, 0);
-  }
-
-  public ResultSetHeaderPacket(byte packetId,
-      int fieldCount, long extra) {
-    this.packetId = packetId;
-    this.fieldCount = fieldCount;
-    this.extra = extra;
-  }
 
   @Override
   public byte[] getBytes() {
@@ -74,16 +61,15 @@ public class ResultSetHeaderPacket extends MySQLPacket {
   @Override
   public int getPacketSize() {
     int size = PACKET_HEADER_SIZE;
-    size += BufferUtils.getLength(fieldCount); // fieldCount
+    size += BufferUtils.getLength(fieldCount);
     if (extra > 0) {
-      size += BufferUtils.getLength(extra); // extra
+      size += BufferUtils.getLength(extra);
     }
     return size;
-  }
+  } 
 
   @Override
   protected String getPacketInfo() {
     return "MySQL ResultSetHeader Packet";
   }
-
 }

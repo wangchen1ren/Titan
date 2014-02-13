@@ -1,6 +1,8 @@
 
 package com.efuture.titan.net.bio;
 
+import java.sql.Connection;
+
 import com.efuture.titan.session.SessionState;
 import com.efuture.titan.metastore.DataNode;
 
